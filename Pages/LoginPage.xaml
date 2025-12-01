@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="InventorySystem.Pages.LoginPage"
+             BackgroundColor="#F8F9FA"
+             Shell.NavBarIsVisible="False">
+             
+    <Shell.TitleView>
+        <Grid /> <!-- kosongkan title view -->
+    </Shell.TitleView>
+
+    <ScrollView>
+        <VerticalStackLayout
+            Padding="40,60,40,40"
+            Spacing="25"
+            VerticalOptions="CenterAndExpand">
+            <!-- Logo/Icon Section -->
+            <Frame BackgroundColor="Transparent"
+                HasShadow="False"
+                Padding="0"
+                HorizontalOptions="Center">
+                <Image Source="Images/avatar.png"
+                    WidthRequest="120"
+                    HeightRequest="120"
+                    Aspect="AspectFill"
+                    HorizontalOptions="Center">
+                    <Image.Clip>
+                        <EllipseGeometry Center="60,60" RadiusX="60" RadiusY="60" />
+                    </Image.Clip>
+                </Image>
+            </Frame>
+            
+            <!-- Welcome Text -->
+            <VerticalStackLayout Spacing="8" Margin="0,0,0,20">
+                <Label Text="Selamat Datang Kembali!"
+                       FontFamily="Misans"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="#2C3E50"
+                       HorizontalTextAlignment="Center" />
+                
+                <Label Text="Masuk Ke Nurul Huda"
+                       FontFamily="Misans"
+                       FontSize="16"
+                       TextColor="#7F8C8D"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            
+            <!-- Login Form Container -->
+            <Frame BackgroundColor="White"
+                   CornerRadius="15"
+                   HasShadow="True"
+                   Padding="30,25">
+                
+                <VerticalStackLayout Spacing="20">
+                    <!-- Email Input -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Username"
+                               FontFamily="Misans"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#34495E" />
+                        <Frame BackgroundColor="#F8F9FA"
+                               CornerRadius="8"
+                               HasShadow="False"
+                               Padding="0"
+                               BorderColor="#E9ECEF">
+                            <Entry x:Name="EmailEntry"
+                                   Placeholder="Enter your email"
+                                   PlaceholderColor="#95A5A6"
+                                   FontSize="16"
+                                   TextColor="#2C3E50"
+                                   Keyboard="Email"
+                                   BackgroundColor="Transparent"
+                                   Margin="15,12" />
+                        </Frame>
+                    </VerticalStackLayout>
+                    
+                    <!-- Password Input -->
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="Password"
+                               FontFamily="Misans"
+                               FontSize="14"
+                               FontAttributes="Bold"
+                               TextColor="#34495E" />
+                        <Frame BackgroundColor="#F8F9FA"
+                               CornerRadius="8"
+                               HasShadow="False"
+                               Padding="0"
+                               BorderColor="#E9ECEF">
+                            <Entry x:Name="PasswordEntry"
+                                   Placeholder="Enter your password"
+                                   PlaceholderColor="#95A5A6"
+                                   FontSize="16"
+                                   TextColor="#2C3E50"
+                                   IsPassword="True"
+                                   BackgroundColor="Transparent"
+                                   Margin="15,12" />
+                        </Frame>
+                    </VerticalStackLayout>
+                    
+                    <!-- Remember Me & Forgot Password -->
+                    <Grid ColumnDefinitions="*,*" Margin="0,5">
+                        <HorizontalStackLayout Grid.Column="0" Spacing="8">
+                            <CheckBox x:Name="RememberMeCheckBox"
+                                      Color="#007ACC" />
+                            <Label Text="Remember me"
+                                   FontFamily="Misans"
+                                   FontSize="13"
+                                   TextColor="#7F8C8D"
+                                   VerticalTextAlignment="Center" />
+                        </HorizontalStackLayout>
+                        
+                        <Label Grid.Column="1"
+                               FontFamily="Misans"
+                               Text="Forgot Password?"
+                               FontSize="13"
+                               TextColor="#007ACC"
+                               FontAttributes="Bold"
+                               HorizontalTextAlignment="End"
+                               VerticalTextAlignment="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnForgotPasswordTapped" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Grid>
+                    
+                    <!-- Login Button -->
+                    <Button x:Name="LoginButton"
+                            FontFamily="Misans"
+                            Text="Sign In"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            BackgroundColor="#007ACC"
+                            TextColor="White"
+                            CornerRadius="25"
+                            HeightRequest="50"
+                            Margin="0,15,0,0"
+                            Clicked="OnLoginClicked">
+                        <Button.Shadow>
+                            <Shadow Brush="#000000"
+                                    Offset="0,4"
+                                    Radius="8"
+                                    Opacity="0.3" />
+                        </Button.Shadow>
+                    </Button>
+                    
+                    <!-- <Button x:Name="CameraButton"
+                            Text="Test Camera"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            BackgroundColor="#56f23a"
+                            TextColor="Black"
+                            CornerRadius="25"
+                            HeightRequest="50"
+                            Margin="0,15,0,0"
+                            Clicked="OnOpenCameraClicked">
+                        <Button.Shadow>
+                            <Shadow Brush="#000000"
+                                    Offset="0,4"
+                                    Radius="8"
+                                    Opacity="0.3" />
+                        </Button.Shadow>
+                    </Button> -->
+                </VerticalStackLayout>
+            </Frame>
+            
+            <!-- Divider -->
+            <!-- <Grid ColumnDefinitions="*,Auto,*" 
+                  VerticalOptions="Center"
+                  Margin="0,10">
+                <BoxView Grid.Column="0" 
+                         BackgroundColor="#E9ECEF" 
+                         HeightRequest="1"
+                         VerticalOptions="Center" />
+                <Label Grid.Column="1" 
+                       Text=" OR " 
+                       FontSize="12"
+                       TextColor="#95A5A6"
+                       Margin="10,0" />
+                <BoxView Grid.Column="2" 
+                         BackgroundColor="#E9ECEF" 
+                         HeightRequest="1"
+                         VerticalOptions="Center" />
+            </Grid> -->
+            
+            <!-- Social Login Buttons -->
+            <!-- <VerticalStackLayout Spacing="12">
+                <Button Text="Continue with Google"
+                        FontSize="16"
+                        BackgroundColor="White"
+                        TextColor="#4285F4"
+                        BorderColor="#E9ECEF"
+                        BorderWidth="1"
+                        CornerRadius="25"
+                        HeightRequest="45"
+                        Clicked="OnGoogleLoginClicked" />
+                
+                <Button Text="Continue with Apple"
+                        FontSize="16"
+                        BackgroundColor="#000000"
+                        TextColor="White"
+                        CornerRadius="25"
+                        HeightRequest="45"
+                        Clicked="OnAppleLoginClicked" />
+            </VerticalStackLayout> -->
+            
+            <!-- Sign Up Link -->
+            <!-- <HorizontalStackLayout HorizontalOptions="Center" 
+                                   Spacing="5"
+                                   Margin="0,15,0,0">
+                <Label Text="Don't have an account?"
+                       FontSize="14"
+                       TextColor="#7F8C8D" />
+                <Label Text="Sign Up"
+                       FontSize="14"
+                       TextColor="#007ACC"
+                       FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSignUpTapped" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout> -->
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
