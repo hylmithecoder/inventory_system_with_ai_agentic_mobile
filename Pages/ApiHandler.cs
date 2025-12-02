@@ -2,10 +2,25 @@ using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+
+public class ApiResponse
+{
+    public HttpResponseMessage Response { get; }
+    public CookieContainer Cookies { get; }
+
+    public ApiResponse(HttpResponseMessage response, CookieContainer cookies)
+    {
+        Response = response;
+        Cookies = cookies;
+    }
+}
 
 public class ApiHandler
 {
-    public string baseUrl = "https://ilmeee.com/smart_inventory_solution/";
+    public const string BaseUrl = "https://ilmeee.com/smart_inventory_solution/";
+    public const string LoginUrl = BaseUrl + "accounts/";
+    public const string RegisterUrl = BaseUrl + "register/";
 
     public async Task<InventoryResponse> getInfoInventory()
     {
@@ -16,7 +31,7 @@ public class ApiHandler
 
         using var client = new HttpClient(handler);
 
-        var response = await client.GetAsync($"{baseUrl}");
+        var response = await client.GetAsync($"{BaseUrl}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Convert JSON string ke object InventoryResponse
@@ -24,80 +39,37 @@ public class ApiHandler
         return inventoryResponse;
     }
 
-    public async Task<UserResponse> getInfoUser(string user)
+    public async Task<ApiResponse> Post(string url, Dictionary<string, string> payload)
     {
-        var handler = new HttpClientHandler
-        {
-            CookieContainer = new CookieContainer()
-        };
+        var content = new FormUrlEncodedContent(payload);
 
+        var handler = new HttpClientHandler { CookieContainer = new CookieContainer() };
         using var client = new HttpClient(handler);
-
-        var response = await client.GetAsync($"{baseUrl}?type=informaccount&email={user}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Convert JSON string ke object UserResponse
-        var userResponse = JsonConvert.DeserializeObject<UserResponse>(jsonString);
-        return userResponse;
-    }
-
-
-    public async Task<UserResponse?> getInfoUserSiswa(string user)
-    {
-        var handler = new HttpClientHandler
-        {
-            CookieContainer = new CookieContainer()
-        };
-
-        using var client = new HttpClient(handler);
-
-        var response = client.GetAsync($"{baseUrl}?issiswa=true&email={user}");
-        var jsonString = await response.Result.Content.ReadAsStringAsync();
-
-        // Convert JSON string ke object UserResponse
-        var userResponse = JsonConvert.DeserializeObject<UserResponse>(jsonString);
-        return userResponse;
-    }
-
-    public async Task<string> responseGet(string baseUrl, string user)
-    {
-        var handler = new HttpClientHandler
-        {
-            CookieContainer = new CookieContainer()
-        };
-
-        using var client = new HttpClient(handler);
+        var response = await client.PostAsync(url, content);
         
-        var response = client.GetAsync($"{baseUrl}{user}");
-        var jsonString = await response.Result.Content.ReadAsStringAsync();
-
-        return jsonString;
+        return new ApiResponse(response, handler.CookieContainer);
     }
 
     public async Task<string> readCookiesFile()
     {
         try
         {
-            // Path ke folder data aplikasi
             string appDataPath = FileSystem.AppDataDirectory;
             string filePath = Path.Combine(appDataPath, "cookies.txt");
 
             if (File.Exists(filePath))
             {
-                // Baca isi file secara async
                 using var reader = new StreamReader(filePath);
                 string content = await reader.ReadToEndAsync();
                 return content;
             }
             else
             {
-                // Kalau file tidak ada, return string kosong/null
                 return null;
             }
         }
         catch (Exception ex)
         {
-            // Bisa log error atau tampilkan alert
             System.Diagnostics.Debug.WriteLine($"Error reading cookies file: {ex.Message}");
             return null;
         }
@@ -112,34 +84,19 @@ public class ApiHandler
         await writer.WriteAsync(cookies);
     }
 
+    public async Task clearCookiesFile()
+    {
+        string appDataPath = FileSystem.AppDataDirectory;
+        string filePath = Path.Combine(appDataPath, "cookies.txt");
+
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
 }
 
 #region JSON Handler
-public class UserResponse
-{
-    public string status { get; set; }
-    public string message { get; set; }
-    public UserData? data { get; set; }
-}
-
-public class UserData
-{
-    public string? id { get; set; }
-    public string? nama { get; set; }
-    public string? guru_mapel { get; set; }
-    public string? wali_kelas { get; set; }
-    public string? foto { get; set; }
-    public string? ttl { get; set; }
-    public string? alamat { get; set; }
-    public string? no_telp { get; set; }
-    public string? email { get; set; }
-    public string? password { get; set; }
-    public string? admin { get; set; }
-    public int? NISN { get; set; }
-    public string? kelas { get; set; }
-
-}
-
 public class InventoryResponse
 {
     public string status { get; set; }

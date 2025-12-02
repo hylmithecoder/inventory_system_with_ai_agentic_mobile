@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:InventorySystem.Controls"
-             x:Class="InventorySystem.Pages.LoginPage"
+             x:Class="InventorySystem.Pages.RegisterPage"
              BackgroundColor="White"
              Shell.NavBarIsVisible="False">
 
@@ -10,7 +10,7 @@
 
         <!-- Header -->
         <Label Grid.Row="0"
-               Text="Login"
+               Text="Register"
                FontSize="24"
                FontAttributes="Bold"
                TextColor="#333333"
@@ -24,7 +24,7 @@
                              Padding="30,0"
                              VerticalOptions="Center">
 
-            <!-- Email -->
+            <!-- Username -->
             <VerticalStackLayout Spacing="5">
                 <Label Text="Username"
                        FontSize="14"
@@ -33,9 +33,26 @@
                        CornerRadius="10"
                        BorderColor="#E0E0E0"
                        BackgroundColor="#F5F5F5">
-                    <Entry x:Name="EmailEntry"
+                    <Entry x:Name="UsernameEntry"
                            Placeholder="Enter your username"
                            FontSize="16"
+                           TextColor="#333333"/>
+                </Frame>
+            </VerticalStackLayout>
+
+            <!-- Email -->
+            <VerticalStackLayout Spacing="5">
+                <Label Text="Email"
+                       FontSize="14"
+                       TextColor="#666666"/>
+                <Frame Padding="15,0"
+                       CornerRadius="10"
+                       BorderColor="#E0E0E0"
+                       BackgroundColor="#F5F5F5">
+                    <Entry x:Name="EmailEntry"
+                           Placeholder="Enter your email"
+                           FontSize="16"
+                           Keyboard="Email"
                            TextColor="#333333"/>
                 </Frame>
             </VerticalStackLayout>
@@ -57,48 +74,28 @@
                 </Frame>
             </VerticalStackLayout>
 
-            <!-- Remember Me & Forgot Password -->
-            <Grid ColumnDefinitions="*,*">
-                <HorizontalStackLayout Spacing="5">
-                    <CheckBox x:Name="RememberMeCheckBox"/>
-                    <Label Text="Remember Me"
-                           VerticalOptions="Center"/>
-                </HorizontalStackLayout>
-
-                <Label Grid.Column="1"
-                       Text="Forgot Password?"
-                       TextColor="#00BFA5"
-                       HorizontalOptions="End"
-                       VerticalOptions="Center">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnForgotPasswordTapped" />
-                    </Label.GestureRecognizers>
-                </Label>
-            </Grid>
-
-            <!-- Login Button -->
-            <Button x:Name="LoginButton"
-                    Text="Login"
+            <!-- Register Button -->
+            <Button x:Name="RegisterButton"
+                    Text="Register"
                     BackgroundColor="#00BFA5"
                     TextColor="White"
                     CornerRadius="25"
                     HeightRequest="50"
                     FontSize="18"
                     FontAttributes="Bold"
-                    Clicked="OnLoginClicked"/>
+                    Clicked="OnRegisterClicked"/>
 
-            <!-- Register Button -->
-            <Button x:Name="RegisterButton"
-                Text="Register"
-                BackgroundColor="White"
-                TextColor="#00BFA5"
-                BorderColor="#00BFA5"
-                BorderWidth="1"
-                CornerRadius="25"
-                HeightRequest="50"
-                FontSize="18"
-                FontAttributes="Bold"
-                Clicked="OnSignUpTapped"/>
+            <!-- Login Link -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
+                <Label Text="Already have an account?"/>
+                <Label Text="Login"
+                       TextColor="#00BFA5"
+                       FontAttributes="Bold">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLoginTapped"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
 
         <controls:SnackBar x:Name="SnackBar" Grid.Row="1"/>

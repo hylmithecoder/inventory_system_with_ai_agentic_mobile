@@ -9,8 +9,25 @@
     Title="InventorySystem">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate pages:MainPage}"
-        Route="MainPage" />
+        Title="Loading"
+        ContentTemplate="{DataTemplate pages:LoadingPage}"
+        Route="LoadingPage" />
+
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate pages:LoginPage}"
+        Route="LoginPage" />
+
+    <ShellContent
+        Title="Register"
+        ContentTemplate="{DataTemplate pages:RegisterPage}"
+        Route="RegisterPage" />
+
+    <FlyoutItem Title="Main">
+        <ShellContent
+            Title="Main"
+            ContentTemplate="{DataTemplate pages:MainPage}"
+            Route="MainPage" />
+    </FlyoutItem>
 
 </Shell>

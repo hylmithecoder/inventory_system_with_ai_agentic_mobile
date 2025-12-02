@@ -1,7 +1,9 @@
 # Define variables for common commands and project name
 DOTNET = dotnet
 PROJECT_NAME = InventorySystem.csproj
-BUILD_DIR = bin/Debug/net10.0-android # Adjust target framework as needed
+BUILD_DIR = bin/Release/net10.0-android # Adjust target framework as needed
+ADB = adb
+APK_NAME = com.tunggubangbelumsiap.inventorysystem-Signed.apk
 
 .PHONY: all build run test clean
 
@@ -10,6 +12,10 @@ all: build run
 build:
 	@echo "--- Building the .NET project ---"
 	$(DOTNET) build $(PROJECT_NAME) -f net10.0-android  -c Release
+
+install:
+	@echo "--- Installing the app on the connected Android device ---"
+	$(ADB) install -r bin/Release/net10.0-android/$(APK_NAME)
 
 test:
 	@echo "--- Running tests for the .NET project ---"
