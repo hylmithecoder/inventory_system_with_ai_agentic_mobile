@@ -11,7 +11,7 @@ all: build run
 
 build:
 	@echo "--- Building the .NET project ---"
-	$(DOTNET) build $(PROJECT_NAME) -f net10.0-android  -c Release
+	$(DOTNET) build $(PROJECT_NAME) -f net10.0-android -c Release
 
 install:
 	@echo "--- Installing the app on the connected Android device ---"

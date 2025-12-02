@@ -16,6 +16,9 @@ public static class MauiProgram
 				fonts.AddFont("MiSans-Medium.ttf", "MiSans" );
 			});
 
+		// Load .env file
+		DotEnv.Load(Path.Combine(FileSystem.AppDataDirectory, ".env"));
+
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif

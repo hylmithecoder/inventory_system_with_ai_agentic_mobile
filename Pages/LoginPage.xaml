@@ -9,14 +9,36 @@
     <Grid RowDefinitions="Auto, *">
 
         <!-- Header -->
-        <Label Grid.Row="0"
-               Text="Login"
-               FontSize="24"
-               FontAttributes="Bold"
-               TextColor="#333333"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               Margin="0,40,0,20"/>
+        <Frame BackgroundColor="Transparent"
+                HasShadow="False"
+                Padding="0"
+                HorizontalOptions="Center">
+                <Image Source="Images/avatar.png"
+                    WidthRequest="120"
+                    HeightRequest="120"
+                    Aspect="AspectFill"
+                    HorizontalOptions="Center">
+                    <Image.Clip>
+                        <EllipseGeometry Center="60,60" RadiusX="60" RadiusY="60" />
+                    </Image.Clip>
+                </Image>
+            </Frame>
+            
+            <!-- Welcome Text -->
+            <VerticalStackLayout Spacing="8" Margin="0,0,0,20">
+                <Label Text="Selamat Datang Kembali!"
+                       FontFamily="Misans"
+                       FontSize="32"
+                       FontAttributes="Bold"
+                       TextColor="#2C3E50"
+                       HorizontalTextAlignment="Center" />
+                
+                <Label Text="Masuk Ke Nurul Huda"
+                       FontFamily="Misans"
+                       FontSize="16"
+                       TextColor="#7F8C8D"
+                       HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
 
         <!-- Form -->
         <VerticalStackLayout Grid.Row="1"
@@ -59,10 +81,14 @@
 
             <!-- Remember Me & Forgot Password -->
             <Grid ColumnDefinitions="*,*">
-                <HorizontalStackLayout Spacing="5">
-                    <CheckBox x:Name="RememberMeCheckBox"/>
+                <HorizontalStackLayout Spacing="8">
+                    <CheckBox x:Name="RememberMeCheckBox"
+                        Color="Aqua"/>
                     <Label Text="Remember Me"
-                           VerticalOptions="Center"/>
+                            FontFamily="Misans"
+                            FontSize="13"
+                            TextColor="#00BFA5"
+                            VerticalOptions="Center"/>
                 </HorizontalStackLayout>
 
                 <Label Grid.Column="1"

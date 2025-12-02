@@ -15,7 +15,18 @@ public partial class LoginPage : ContentPage
     ApiHandler handlerApi = new ApiHandler();
     public LoginPage()
     {
+        isLoggined();
+        // if not loggined, show login page
         InitializeComponent();
+    }
+
+    private async void isLoggined()
+    {
+        var session = await handlerApi.readCookiesFile();
+        if (!string.IsNullOrEmpty(session))
+        {
+            await Shell.Current.GoToAsync("//MainPage");
+        }
     }
 
     private async void OnLoginClicked(object sender, EventArgs e)
@@ -70,11 +81,12 @@ public partial class LoginPage : ContentPage
                 {"password", password}
             };
 
-            await SnackBar.Show($"Logging in... with email: {inputEmail} and password: {password}");
+            // await SnackBar.Show($"Logging in... with email: {inputEmail} and password: {password}");
+            handlerApi.username = inputEmail;
             var apiResponse = await handlerApi.Post(ApiHandler.LoginUrl, payload);
             var responseContent = await apiResponse.Response.Content.ReadAsStringAsync();
 
-            await SnackBar.Show($"Response: {responseContent}");
+            // await SnackBar.Show($"Response: {responseContent}");
 
             if (apiResponse.Response.IsSuccessStatusCode)
             {

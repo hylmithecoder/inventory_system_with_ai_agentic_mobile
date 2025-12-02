@@ -64,6 +64,36 @@ namespace InventorySystem.Utils
             return tcs.Task;
         }
 
+        public static Task SlideInFromRight(this VisualElement element, double targetWidth, uint length = 250)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            
+            element.TranslationX = targetWidth;
+            element.WidthRequest = targetWidth;
+            
+            element.Animate("SlideIn", v => {
+                element.TranslationX = v;
+            }, targetWidth, 0, length: length, finished: (v, cancelled) => {
+                tcs.SetResult(!cancelled);
+            });
+            
+            return tcs.Task;
+        }
+
+        public static Task SlideOutToRight(this VisualElement element, double targetWidth, uint length = 250)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            
+            element.Animate("SlideOut", v => {
+                element.TranslationX = v;
+            }, 0, targetWidth, length: length, finished: (v, cancelled) => {
+                element.TranslationX = targetWidth;
+                tcs.SetResult(!cancelled);
+            });
+            
+            return tcs.Task;
+        }
+
         public static Task WidthTo(this ColumnDefinition column, double newWidth, View animator, uint length = 250)
         {
             double startWidth = column.Width.Value;
