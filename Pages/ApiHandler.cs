@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using dotenv.net;
+using InventorySystem.GlobalVariables;
+using Newtonsoft.Json.Serialization;
 
+namespace InventorySystem.Pages{
 public class ApiResponse
 {
     public HttpResponseMessage Response { get; }
@@ -23,7 +26,18 @@ public class ApiHandler
     public const string LoginUrl = BaseUrl + "accounts/";
     public const string RegisterUrl = BaseUrl + "register/";
     public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+    private readonly string geminiApiKey = "AIzaSyCyMnef6WTNYb6xSe7dsiaZMTwgPmhYZfA";
     public string username = "";
+    private static readonly HttpClient client = new HttpClient();
+
+    public ApiHandler()
+    {
+        // geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+        if (string.IsNullOrEmpty(geminiApiKey))
+        {
+            throw new InvalidOperationException("GEMINI_API_KEY is not set in environment variables.");
+        }
+    }
 
     public async Task<InventoryResponse> getInfoInventory()
     {
@@ -53,19 +67,38 @@ public class ApiHandler
         return new ApiResponse(response, handler.CookieContainer);
     }
 
-    public async Task<GeminiResponse> PostGemini(string url, Dictionary<string, object> payload)
+    public async Task<GeminiResponse> PostGemini(GeminiRequest payload)
     {
-        var jsonPayload = JsonConvert.SerializeObject(payload);
-        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-
-        var handler = new HttpClientHandler { CookieContainer = new CookieContainer() };
-        using var client = new HttpClient(handler);
-        string geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? "";
-        var response = await client.PostAsync($"{url}?key={geminiApiKey}", content);
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var geminiResponse = JsonConvert.DeserializeObject<GeminiResponse>(responseContent);
-        return geminiResponse;
+         
+            // Menggunakan camelCase untuk properti JSON sesuai konvensi API
+            var serializerSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            var jsonPayload = JsonConvert.SerializeObject(payload, serializerSettings);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+    
+            var requestUri = $"{GeminiUrl}?key={geminiApiKey}";
+    
+            var response = await client.PostAsync(requestUri, content);
+    
+            // 4. Tambahkan penanganan error yang kuat.
+            // Periksa jika request tidak berhasil (misalnya, status code 4xx atau 5xx).
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Request API gagal dengan status code {response.StatusCode}: {errorContent}");
+            }
+    
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var geminiResponse = JsonConvert.DeserializeObject<GeminiResponse>(responseContent);
+    
+            if (geminiResponse == null)
+            {
+            throw new InvalidOperationException("Gagal melakukan deserialisasi respons dari GeminiAPI.");
+        }
+    
+        return geminiResponse;   
     }
 
     public async Task<ApiResponse> Put(string url, Dictionary<string, string> payload)
@@ -76,6 +109,18 @@ public class ApiHandler
         using var client = new HttpClient(handler);
         var response = await client.PutAsync(url, content);
         
+        return new ApiResponse(response, handler.CookieContainer);
+    }
+
+    public async Task<ApiResponse> Delete(string url)
+    {
+        var handler = new HttpClientHandler { CookieContainer = new CookieContainer() };
+        using var client = new HttpClient(handler);
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        
+        var response = await client.DeleteAsync(url, cancellationToken);
+
         return new ApiResponse(response, handler.CookieContainer);
     }
 
@@ -113,6 +158,40 @@ public class ApiHandler
         await writer.WriteAsync(cookies);
     }
 
+    public async Task saveUserName(string username)
+    {
+        string appDataPath = FileSystem.AppDataDirectory;
+        string filePath = Path.Combine(appDataPath, "username.txt");
+
+        using var writer = new StreamWriter(filePath, false);
+        await writer.WriteAsync(username);
+    }
+
+    public async Task<string> readUserName()
+    {
+        try
+        {
+            string appDataPath = FileSystem.AppDataDirectory;
+            string filePath = Path.Combine(appDataPath, "username.txt");
+
+            if (File.Exists(filePath))
+            {
+                using var reader = new StreamReader(filePath);
+                string content = await reader.ReadToEndAsync();
+                return content;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error reading username file: {ex.Message}");
+            return null;
+        }
+    }
+ 
     public async Task clearCookiesFile()
     {
         string appDataPath = FileSystem.AppDataDirectory;
@@ -147,8 +226,6 @@ public class GeminiResponse
 {
     public List<Candidate>? candidates { get; set; }
     public UsageMetadata? usageMetadata { get; set; }
-    public string? modelVersion { get; set; }
-    public string? responseId { get; set; }
 }
 
 public class Candidate
@@ -157,30 +234,5 @@ public class Candidate
     public string? finishReason { get; set; }
     public int index { get; set; }
 }
-
-public class Content
-{
-    public List<Part>? parts { get; set; }
-    public string? role { get; set; }
-}
-
-public class Part
-{
-    public string? text { get; set; }
-}
-
-public class UsageMetadata
-{
-    public int promptTokenCount { get; set; }
-    public int candidatesTokenCount { get; set; }
-    public int totalTokenCount { get; set; }
-    public List<PromptTokensDetail>? promptTokensDetails { get; set; }
-}
-
-public class PromptTokensDetail
-{
-    public string? modality { get; set; }
-    public int tokenCount { get; set; }
-}
-
 #endregion
+}

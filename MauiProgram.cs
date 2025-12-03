@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui;
+// using InventorySystem.Components;
 
 namespace InventorySystem;
 
@@ -15,9 +17,12 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 				fonts.AddFont("MiSans-Medium.ttf", "MiSans" );
 			});
+		
+		builder = builder.UseMauiCommunityToolkit();
+
 
 		// Load .env file
-		DotEnv.Load(Path.Combine(FileSystem.AppDataDirectory, ".env"));
+		// DotEnv.Load(Path.Combine(FileSystem.AppDataDirectory, ".env"));
 
 #if DEBUG
 		builder.Logging.AddDebug();

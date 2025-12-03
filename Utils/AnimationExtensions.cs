@@ -82,17 +82,32 @@ namespace InventorySystem.Utils
 
         public static Task SlideOutToRight(this VisualElement element, double targetWidth, uint length = 250)
         {
+            element.AbortAnimation("SlideOut");
             var tcs = new TaskCompletionSource<bool>();
-            
-            element.Animate("SlideOut", v => {
-                element.TranslationX = v;
-            }, 0, targetWidth, length: length, finished: (v, cancelled) => {
-                element.TranslationX = targetWidth;
-                tcs.SetResult(!cancelled);
-            });
-            
+
+            element.AnchorX = 0;
+            element.InputTransparent = true;
+            // pastikan start posisi 0 (visible area)
+            element.TranslationX = 0;
+
+            element.Animate(
+                name: "SlideOut",
+                callback: v => element.TranslationX = v,
+                start: 0,
+                end: targetWidth,
+                length: length,
+                easing: Easing.CubicIn,
+                finished: (v, cancelled) =>
+                {
+                    element.TranslationX = targetWidth;
+                    element.InputTransparent = false;
+                    tcs.SetResult(!cancelled);
+                }
+            );
+
             return tcs.Task;
         }
+
 
         public static Task WidthTo(this ColumnDefinition column, double newWidth, View animator, uint length = 250)
         {

@@ -37,6 +37,7 @@ public partial class LoginPage : ContentPage
         try
         {
             string email = EmailEntry.Text?.Trim();
+            handlerApi.username = email;
             string password = PasswordEntry.Text;
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -44,7 +45,7 @@ public partial class LoginPage : ContentPage
                 await SnackBar.Show("Please enter your username and password.");
                 return;
             }
-
+            await handlerApi.saveUserName(email);
             string sessionValue = await LoginAndGetSessionAsync(email, password);
 
             if (sessionValue != null)
@@ -115,5 +116,15 @@ public partial class LoginPage : ContentPage
     private async void OnSignUpTapped(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("//RegisterPage");
+    }
+
+    // Di LoginPage.xaml.cs
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        
+        // Fade in animation
+        this.Opacity = 0;
+        await this.FadeTo(1, 500);
     }
 }

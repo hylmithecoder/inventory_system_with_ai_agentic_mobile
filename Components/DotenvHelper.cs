@@ -2,19 +2,22 @@ using System;
 using dotenv.net;
 using System.IO;
 
-public static class DotEnv
+namespace InventorySystem.Components
 {
-    public static void Load(string filePath)
+    public static class DotEnv
     {
-        if (!File.Exists(filePath))
-            return;
-
-        foreach (var line in File.ReadAllLines(filePath))
+        public static void Load(string filePath)
         {
-            var parts = line.Split('=', 2);
-            if (parts.Length == 2)
+            if (!File.Exists(filePath))
+                return;
+
+            foreach (var line in File.ReadAllLines(filePath))
             {
-                Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+                var parts = line.Split('=', 2);
+                if (parts.Length == 2)
+                {
+                    Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+                }
             }
         }
     }

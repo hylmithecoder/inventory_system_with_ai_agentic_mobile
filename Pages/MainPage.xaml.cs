@@ -1,13 +1,17 @@
 using System.Globalization;
 using InventorySystem.Utils;
+using InventorySystem.GlobalVariables;
+using System.Collections.ObjectModel;
 
 namespace InventorySystem.Pages;
 
 public partial class MainPage : ContentPage
 {
 	private readonly BoxView Animator = new BoxView();
-
+    public ObservableCollection<ChatMessage> Messages { get; set; } = new();
 	private ApiHandler apiHandler;
+    public string token;
+    public string username;
 
 	public MainPage()
 	{
@@ -15,7 +19,16 @@ public partial class MainPage : ContentPage
 		apiHandler = new ApiHandler();
         Sidebar.IsVisible = _isSidebarOpen;
 		LoadInventoryData();
+        getUserName();
+        BindingContext = this;
 	}
+
+    private async void getUserName()
+    {
+        var getUsername = await apiHandler.readUserName();
+        username = getUsername ?? "";
+        await SnackBar.Show($"Welcome, {username}!");
+    }
 
 	private async void LoadInventoryData()
     {
@@ -27,6 +40,12 @@ public partial class MainPage : ContentPage
             {
                 // Set data ke CollectionView
                 InventoryCollection.ItemsSource = response.data;
+                var getToken = apiHandler.readCookiesFile();
+                if (getToken != null)
+                {
+                    token = await getToken;
+                }
+                await SnackBar.Show("Inventory data loaded successfully.");
                 UpdateStats(response.data);
             }
             else
@@ -54,35 +73,29 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void UpdateStats(List<InventoryData> data)
-    {
-        // Total Items
-        TotalItemsLabel.Text = data.Count.ToString();
-
-        // Total Stock
-        int totalStock = 0;
-        foreach (var item in data)
-        {
-            if (int.TryParse(item.stock, out int stock))
-            {
-                totalStock += stock;
-            }
-        }
-        TotalStockLabel.Text = totalStock.ToString("N0");
-
-        // Total Value (stock * price)
-        decimal totalValue = 0;
-        foreach (var item in data)
-        {
-            if (int.TryParse(item.stock, out int stock) &&
-                decimal.TryParse(item.price, out decimal price))
-            {
-                totalValue += stock * price;
-                // Format ulang harga agar tidak ada ".00"
-                item.price = price.ToString("N0"); 
-            }
-        }
-        TotalValueLabel.Text = $"Rp {totalValue:N0}";
+    private void UpdateStats(List<InventoryData> data) { 
+        // Total Items 
+        TotalItemsLabel.Text = data.Count.ToString(); 
+        //Total Stock 
+        int totalStock = 0; 
+        foreach (var item in data) 
+        { 
+            if (int.TryParse(item.stock, out int stock)) 
+            { 
+                totalStock += stock; 
+            } 
+        } 
+        TotalStockLabel.Text = totalStock.ToString("N0"); 
+        // Total Value (stock * price) 
+        decimal totalValue = 0; 
+        foreach (var item in data) 
+        { 
+            if (int.TryParse(item.stock, out int stock) && decimal.TryParse(item.price, out decimal price)) 
+            { 
+                totalValue += (decimal)stock * price; 
+            } 
+        } 
+        TotalValueLabel.Text = $"Rp {totalValue:N2}"; 
     }
 
 
@@ -136,8 +149,11 @@ public partial class MainPage : ContentPage
     }
 
     // Button Item Tapped
+    private bool _isItemTapped = false;
     private async void OnItemTapped(object sender, EventArgs e)
     {
+        if (_isItemTapped) return; // Prevent multiple taps
+        _isItemTapped = true;
         if (sender is Border border && border.BindingContext is InventoryData item)
         {
             // Ambil posisi relatif ke parent AbsoluteLayout
@@ -160,14 +176,40 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnChoiceLayoutTapped(object sender, EventArgs e)
+    {
+        // Cek apakah tap terjadi di luar ChoiceFrame
+        var tapEventArgs = e as TappedEventArgs;
+        if (tapEventArgs != null)
+        {
+            var position = tapEventArgs.GetPosition(ChoiceLayout);
+            var frameBounds = new Rect(
+                AbsoluteLayout.GetLayoutBounds(ChoiceFrame).X,
+                AbsoluteLayout.GetLayoutBounds(ChoiceFrame).Y,
+                ChoiceFrame.Width,
+                ChoiceFrame.Height);
+
+            if (!new Rect(frameBounds.X, frameBounds.Y, frameBounds.Width, frameBounds.Height).Contains(position.Value))
+            {
+                // Tutup modal jika tap di luar frame
+                OnCancelChoiceClicked(sender, e);
+            }
+        }
+    }
+
     private async void OnCancelChoiceClicked(object sender, EventArgs e)
     {
+        NameEntry.Text = "";
+        StockEntry.Text = "";
+        PriceEntry.Text = "";
+
         await Task.WhenAll(
             ChoiceModal.FadeTo(0, 200, Easing.CubicOut),
             ChoiceModal.ScaleTo(0.8, 200, Easing.CubicIn)
         );
 
         ChoiceModal.IsVisible = false;
+        _isItemTapped = false;
     }
 
     private async void OnRefreshClicked(object sender, EventArgs e)
@@ -190,8 +232,11 @@ public partial class MainPage : ContentPage
         );
     }
 
+    private bool _isEditing = false;
     private async void OnEditItemClicked(object sender, EventArgs e)
     {
+        _isEditing = true;
+        ModalTitle.Text = "Edit Item";
         if (ChoiceModal.BindingContext is InventoryData item)
         {
             // Isi data ke form edit
@@ -229,6 +274,10 @@ public partial class MainPage : ContentPage
             AddItemModal.ScaleTo(0.8, 200, Easing.CubicIn)
         );
 
+        NameEntry.Text = "";
+        StockEntry.Text = "";
+        PriceEntry.Text = "";
+
         AddItemModal.IsVisible = false;
     }
 
@@ -236,29 +285,54 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            string currentUsername = apiHandler.username ?? "";
             var payload = new Dictionary<string, string>
             {
                 {"name", NameEntry.Text?.Trim()},
                 {"stock", StockEntry.Text?.Trim()},
                 {"price", PriceEntry.Text?.Trim()},
-                {"created_by", currentUsername}
+                {"created_by", username},
+                {"action", "create"}
             };
 
-            var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
-            var responseContent = await response.Response.Content.ReadAsStringAsync();
-            await SnackBar.Show($"Response: {responseContent}");
-
-            if (response.Response.IsSuccessStatusCode)
+            if (_isEditing && ChoiceModal.BindingContext is InventoryData editItem)
             {
-                LoadInventoryData();
-            }
-            else
-            {
-                await SnackBar.Show("Failed to add item. Please try again.");
-            }
+                payload["id"] = editItem.ID ?? "";
+                payload["_method"] = "PUT";
+                var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
+                var responseContent = await response.Response.Content.ReadAsStringAsync();
+                // await SnackBar.Show($"Response: {responseContent}");
 
-        } catch (Exception ex)
+                if (response.Response.IsSuccessStatusCode)
+                {
+                    LoadInventoryData();
+                }
+                else
+                {
+                    await SnackBar.Show("Failed to add item. Please try again.");
+                }
+                // await SnackBar.Show("Is editing true");
+                _isEditing = false;
+
+            } 
+            else 
+            {
+                // await SnackBar.Show($"Payload: {string.Join(", ", payload.Select(kv => $"{kv.Key}={kv.Value}"))}");
+                var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
+                var responseContent = await response.Response.Content.ReadAsStringAsync();
+                // await SnackBar.Show($"Response: {responseContent}");
+                
+                if (response.Response.IsSuccessStatusCode)
+                {
+                    LoadInventoryData();
+                }
+                else
+                {
+                    await SnackBar.Show("Failed to add item. Please try again.");
+                }
+                // await SnackBar.Show("Is editing false");
+            }
+        } 
+        catch (Exception ex)
         {
             await SnackBar.Show($"Failed to add item: {ex.Message}");
         }
@@ -270,13 +344,12 @@ public partial class MainPage : ContentPage
         {
             if (ChoiceModal.BindingContext is InventoryData item)
             {
-                var response = await apiHandler.Put(ApiHandler.BaseUrl + "delete/", new Dictionary<string, string>
-                {
-                    {"id", item.ID}
-                });
+
+                string deleteUrl = $"{ApiHandler.BaseUrl}?token={token}&id={item.ID}";
+                var response = await apiHandler.Delete(deleteUrl);
 
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
-                await SnackBar.Show($"Response: {responseContent}");
+                // await SnackBar.Show($"Response: {responseContent}");
 
                 if (response.Response.IsSuccessStatusCode)
                 {
@@ -299,13 +372,14 @@ public partial class MainPage : ContentPage
 
     private async void OnMessageClicked(object sender, EventArgs e)
     {
+        // await SnackBar.Show("Chatbot feature is under development.");
         _isChatbotOpen = !_isChatbotOpen;
-        await UpdateChatbotState();
+        UpdateChatbotState();
     }
 
     private async Task UpdateChatbotState()
     {
-        await SnackBar.Show("Chatbot feature is under development.");
+        // await SnackBar.Show("Chatbot feature is under development.");
         double width = 300;
         uint duration = 250;
 
@@ -343,56 +417,71 @@ public partial class MainPage : ContentPage
     private async void OnSendMessageClicked(object sender, EventArgs e)
     {
         string message = ChatInput.Text?.Trim();
-        if (!string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message))
         {
-            // Tambah pesan user ke chat
-            ChatMessagesList.ItemsSource = null;
-            var messages = new List<string>();
-            if (ChatMessagesList.ItemsSource is List<string> existingMessages)
-            {
-                messages.AddRange(existingMessages);
-            }
-            messages.Add("User: " + message);
+            return;
+        }
+        
+        AddMessageToChat($"You: {message}");
+        await SnackBar.Show($"Sending message to Gemini: {message}");
+        ChatInput.Text = "";
 
-            // Clear input
-            ChatInput.Text = "";
-
-            // Simulasi balasan chatbot
-            var payload = new Dictionary<string, object>
+        try
+        {
+            var geminiPayload = new GeminiRequest
             {
-                ["contents"] = new List<object>
+                Contents = new List<Content>
                 {
-                    new Dictionary<string, object>
+                    new Content
                     {
-                        ["role"] = "user",
-                        ["parts"] = new List<object>
-                        {
-                            new Dictionary<string, object>
-                            {
-                                ["text"] = message
-                            }
-                        }
+                        role = "user",
+                        parts = new List<Part> { new Part { text = message } }
                     }
                 }
             };
 
-            await Task.Delay(1000); // Simulasi delay
-            var response = await apiHandler.PostGemini(ApiHandler.GeminiUrl, payload);
-
-            messages.Add("Chatbot: This is a simulated response.");
-
-            ChatMessagesList.ItemsSource = messages;
-
-            // Scroll ke bawah
-            ChatMessagesList.ScrollTo(messages.Count - 1);
+            await SnackBar.Show("Sending message to Gemini...");
+            var response = await apiHandler.PostGemini(geminiPayload);
+            if (response.candidates != null)
+            {
+                await SnackBar.Show("Received response from Gemini.");
+                string botReply = response.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text ?? "Chatbot: (tidak ada respons)";
+                await SnackBar.Show($"Received response from Gemini: {botReply}");
+                AddMessageToChat($"{botReply}");
+            }
+            else
+            {
+                await SnackBar.Show("Kosong");
+                AddMessageToChat("Bot: No response from Gemini.");
+            }
+        }
+        catch (Exception ex)
+        {
+            AddMessageToChat($"Bot: Error occurred - {ex.Message}");
         }
     }
 
     private async void OnChatbotCloseClicked(object sender, EventArgs e)
     {
-        // Clear chat messages
-        ChatMessagesList.ItemsSource = null;
-        await SnackBar.Show("Chat cleared.");
+        OnChatbotOverlayTapped(sender, e);
+        // await SnackBar.Show("Chatbot closed.");
+    }
+
+    private void AddMessageToChat(string text)
+    {
+        // Tambah pesan baru
+        Messages.Add(new ChatMessage
+        {
+            Content = text,
+            MessageBgColor = "#E0F7FA",   // contoh warna bubble
+            MessageTextColor = "#333333"
+        });
+
+        // Scroll ke item terakhir
+        if (Messages.Any())
+        {
+            ChatMessagesList.ScrollTo(Messages.Last());
+        }
     }
     #endregion
 }

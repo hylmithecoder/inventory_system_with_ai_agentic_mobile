@@ -8,27 +8,6 @@
 
     <AbsoluteLayout x:Name="MainLayout">
         
-        <!-- Message Button (Fixed Position) -->
-        <ContentView AbsoluteLayout.LayoutBounds="0.05,0.9,60,60"
-                    AbsoluteLayout.LayoutFlags="PositionProportional">
-            <Border BackgroundColor="#00BFA5"
-                    Padding="0">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="30"/>
-                </Border.StrokeShape>
-                <Border.Shadow>
-                    <Shadow Brush="#00BFA5" Opacity="0.4" Radius="10" Offset="0,5"/>
-                </Border.Shadow>
-                <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnMessageClicked"/>
-                </Border.GestureRecognizers>
-                <Label Text="💬"
-                    FontSize="28"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"/>
-            </Border>
-        </ContentView>        
-
         <!-- Main Content -->
         <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
                     AbsoluteLayout.LayoutFlags="All"
@@ -197,6 +176,30 @@
             
         </ScrollView>
 
+        <!-- Message Button (Fixed Position - kanan bawah) -->
+        <ContentView AbsoluteLayout.LayoutBounds="0.95,0.9,60,60"
+                    AbsoluteLayout.LayoutFlags="PositionProportional">
+            <Border BackgroundColor="#00BFA5"
+                    Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="30"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#00BFA5" Opacity="0.4" Radius="10" Offset="0,5"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnMessageClicked"/>
+                </Border.GestureRecognizers>
+
+                <!-- Pakai SVG logo -->
+                <Image Source="Resources/Images/chat.svg"
+                    WidthRequest="28"
+                    HeightRequest="28"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+            </Border>
+        </ContentView>
+
         <!-- Chatbot Overlay -->
         <BoxView x:Name="ChatbotOverlay"
                 Color="Black"
@@ -209,21 +212,22 @@
             </BoxView.GestureRecognizers>
         </BoxView>
 
-        <!-- Chatbot Sidebar -->
+        <!-- Chatbot Sidebar (kanan) -->
         <Border x:Name="ChatbotSidebar"
-                AbsoluteLayout.LayoutBounds="1,0,300,1"
+                AbsoluteLayout.LayoutBounds="1,0,0,1"
                 AbsoluteLayout.LayoutFlags="YProportional,HeightProportional"
                 BackgroundColor="White"
                 Padding="0"
                 IsVisible="False">
             <Border.Shadow>
+                <!-- Bayangan ke kiri agar terlihat dari sisi kanan -->
                 <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="-5,0"/>
             </Border.Shadow>
 
             <Grid RowDefinitions="Auto,*,Auto" Padding="20">
                 <!-- Header -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
-                    <Label Text="💬 Chat Support"
+                    <Label Text="Chat Support"
                         FontFamily="MiSans"
                         FontSize="18"
                         FontAttributes="Bold"
@@ -239,9 +243,9 @@
 
                 <!-- Chat Messages -->
                 <CollectionView Grid.Row="1"
-                            x:Name="ChatMessagesList"
-                            SelectionMode="None"
-                            ItemsSource="{Binding Messages}">
+                                x:Name="ChatMessagesList"
+                                SelectionMode="None"
+                                ItemsSource="{Binding Messages}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <VerticalStackLayout Padding="0,5">
@@ -251,7 +255,7 @@
                                     Margin="0,2"
                                     HasShadow="False">
                                     <Label Text="{Binding Content}"
-                                        TextColor="{Binding MessageTextColor}"
+                                        TextColor="Black"
                                         FontFamily="MiSans"
                                         FontSize="13"
                                         LineBreakMode="WordWrap"/>
@@ -269,12 +273,12 @@
                         FontFamily="MiSans"
                         BackgroundColor="#F5F5F5"/>
                     <Button Grid.Column="1"
-                        Text="Send"
-                        FontFamily="MiSans"
-                        BackgroundColor="#3498DB"
-                        TextColor="White"
-                        Clicked="OnSendMessageClicked"
-                        WidthRequest="60"/>
+                            Text="Send"
+                            FontFamily="MiSans"
+                            BackgroundColor="#3498DB"
+                            TextColor="White"
+                            Clicked="OnSendMessageClicked"
+                            WidthRequest="60"/>
                 </Grid>
             </Grid>
         </Border>
@@ -293,7 +297,7 @@
                 VerticalOptions="Center"
                 HorizontalOptions="Center">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Tambah Barang" FontSize="18" FontAttributes="Bold"/>
+                    <Label x:Name="ModalTitle"  Text="Tambah Item" FontSize="18" TextColor="Black" FontFamily="MiSans" FontAttributes="Bold"/>
                     <Entry x:Name="NameEntry" Placeholder="Nama barang"/>
                     <Entry x:Name="StockEntry" Placeholder="Stock" Keyboard="Numeric"/>
                     <Entry x:Name="PriceEntry" Placeholder="Harga" Keyboard="Numeric"/>
@@ -311,20 +315,25 @@
                     AbsoluteLayout.LayoutBounds="0,0,1,1"
                     AbsoluteLayout.LayoutFlags="All">
 
-            <AbsoluteLayout>
-                <Frame x:Name="ChoiceFrame"
-                    BackgroundColor="White"
-                    Padding="20"
-                    CornerRadius="10"
-                    AbsoluteLayout.LayoutBounds="0,0,AutoSize,AutoSize"
-                    AbsoluteLayout.LayoutFlags="None">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Pilih Aksi" FontSize="18" FontAttributes="Bold"/>
-                        <Button Text="Edit" Clicked="OnEditItemClicked" BackgroundColor="#00BFA5" TextColor="White"/>
-                        <Button Text="Hapus" Clicked="OnDeleteItemClicked" BackgroundColor="#E74C3C" TextColor="White"/>
-                        <Button Text="Batal" Clicked="OnCancelChoiceClicked" BackgroundColor="Transparent" TextColor="#E74C3C"/>
-                    </VerticalStackLayout>
-                </Frame>
+            <AbsoluteLayout x:Name="ChoiceLayout">
+
+                <!-- Gesture di overlay -->
+                <AbsoluteLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnChoiceLayoutTapped"/>
+                </AbsoluteLayout.GestureRecognizers>
+                    <Frame x:Name="ChoiceFrame"
+                        BackgroundColor="White"
+                        Padding="20"
+                        CornerRadius="10"
+                        AbsoluteLayout.LayoutBounds="0,0,AutoSize,AutoSize"
+                        AbsoluteLayout.LayoutFlags="None">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Text="Pilih Aksi" FontSize="18" FontAttributes="Bold"/>
+                            <Button Text="Edit" Clicked="OnEditItemClicked" BackgroundColor="#00BFA5" TextColor="White"/>
+                            <Button Text="Hapus" Clicked="OnDeleteItemClicked" BackgroundColor="#E74C3C" TextColor="White"/>
+                            <Button Text="Batal" Clicked="OnCancelChoiceClicked" BackgroundColor="Transparent" TextColor="#E74C3C"/>
+                        </VerticalStackLayout>
+                    </Frame>
             </AbsoluteLayout>
         </ContentView>
 
