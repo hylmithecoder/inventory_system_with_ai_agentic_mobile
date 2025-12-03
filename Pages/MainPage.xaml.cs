@@ -279,6 +279,7 @@ public partial class MainPage : ContentPage
         PriceEntry.Text = "";
 
         AddItemModal.IsVisible = false;
+        _isItemTapped = false;
     }
 
     private async void OnSaveItemClicked(object sender, EventArgs e)
@@ -422,7 +423,7 @@ public partial class MainPage : ContentPage
             return;
         }
         
-        AddMessageToChat($"You: {message}");
+        AddMessageToChat($"You: {message}", false);
         await SnackBar.Show($"Sending message to Gemini: {message}");
         ChatInput.Text = "";
 
@@ -447,17 +448,17 @@ public partial class MainPage : ContentPage
                 await SnackBar.Show("Received response from Gemini.");
                 string botReply = response.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text ?? "Chatbot: (tidak ada respons)";
                 await SnackBar.Show($"Received response from Gemini: {botReply}");
-                AddMessageToChat($"{botReply}");
+                AddMessageToChat($"{botReply}", true);
             }
             else
             {
                 await SnackBar.Show("Kosong");
-                AddMessageToChat("Bot: No response from Gemini.");
+                AddMessageToChat("Bot: No response from Gemini.", true);
             }
         }
         catch (Exception ex)
         {
-            AddMessageToChat($"Bot: Error occurred - {ex.Message}");
+            AddMessageToChat($"Bot: Error occurred - {ex.Message}", true);
         }
     }
 
@@ -467,15 +468,27 @@ public partial class MainPage : ContentPage
         // await SnackBar.Show("Chatbot closed.");
     }
 
-    private void AddMessageToChat(string text)
+    private void AddMessageToChat(string text, bool isAi)
     {
         // Tambah pesan baru
-        Messages.Add(new ChatMessage
+        if (isAi)
         {
-            Content = text,
-            MessageBgColor = "#E0F7FA",   // contoh warna bubble
-            MessageTextColor = "#333333"
-        });
+            Messages.Add(new ChatMessage
+            {
+                Content = text,
+                MessageBgColor = "#4e65e3ff",   // contoh warna bubble
+                MessageTextColor = "#333333"
+            });
+        }
+        else
+        {
+            Messages.Add(new ChatMessage
+            {
+                Content = text,
+                MessageBgColor = "#E0F7FA",   // contoh warna bubble
+                MessageTextColor = "#333333"
+            });           
+        }
 
         // Scroll ke item terakhir
         if (Messages.Any())

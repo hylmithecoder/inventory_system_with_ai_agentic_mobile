@@ -40,28 +40,7 @@
                         TextChanged="OnSearchTextChanged"
                         WidthRequest="150"
                         HorizontalOptions="End"/>
-
-                    <!-- Add button -->
-                    <Button Grid.Column="3"
-                            Text="+"
-                            Clicked="OnAddItemClicked"
-                            BackgroundColor="#00BFA5"
-                            TextColor="White"
-                            FontSize="20"
-                            WidthRequest="40"
-                            HeightRequest="40"
-                            CornerRadius="20"/>
                     
-                    <!-- Refresh button -->
-                    <!-- <Button Grid.Column="4"
-                            Text="⟳"
-                            Clicked="OnRefreshClicked"
-                            BackgroundColor="#00BFA5"
-                            TextColor="White"
-                            FontSize="20"
-                            WidthRequest="40"
-                            HeightRequest="40"
-                            CornerRadius="20"/> -->
                 </Grid>
 
                 <!-- Card Stats -->
@@ -124,6 +103,25 @@
                     </Border>
                 </Grid>
 
+
+                <!-- Add button -->
+                <Border Grid.Column="2"
+                        BackgroundColor="Transparent"
+                        Padding="0"
+                        HorizontalOptions="End">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="20"/>
+                    </Border.StrokeShape>
+                    <Border.Shadow>
+                        <Shadow Brush="#00BFA5" Opacity="0.4" Radius="10" Offset="0,5"/>
+                    </Border.Shadow>
+                    <Button Text="Add Item"
+                            Clicked="OnAddItemClicked"
+                            BackgroundColor="#00BFA5"
+                            TextColor="White"
+                            FontSize="20"
+                            CornerRadius="10"/>
+                </Border>
                 <!-- Inventory List -->
                 <Border BackgroundColor="White" Padding="0"
                         StrokeThickness="0">
@@ -214,50 +212,50 @@
 
         <!-- Chatbot Sidebar (kanan) -->
         <Border x:Name="ChatbotSidebar"
-                AbsoluteLayout.LayoutBounds="1,0,0,1"
+                AbsoluteLayout.LayoutBounds="1,0,500,1"
                 AbsoluteLayout.LayoutFlags="YProportional,HeightProportional"
                 BackgroundColor="White"
                 Padding="0"
                 IsVisible="False">
             <Border.Shadow>
-                <!-- Bayangan ke kiri agar terlihat dari sisi kanan -->
                 <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="-5,0"/>
             </Border.Shadow>
 
             <Grid RowDefinitions="Auto,*,Auto" Padding="20">
+
                 <!-- Header -->
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,15">
-                    <Label Text="Chat Support"
-                        FontFamily="MiSans"
-                        FontSize="18"
-                        FontAttributes="Bold"
-                        TextColor="#2C3E50"/>
                     <Button Grid.Column="1"
                             Text="✕"
-                            FontSize="20"
+                            FontSize="22"
                             BackgroundColor="Transparent"
                             TextColor="#7F8C8D"
                             Clicked="OnChatbotCloseClicked"
-                            Padding="5"/>
+                            Padding="8"/>
+                    <Label Text="Chat Support"
+                        FontFamily="MiSans"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#2C3E50"/>
                 </Grid>
 
-                <!-- Chat Messages -->
+                <!-- Messages -->
                 <CollectionView Grid.Row="1"
                                 x:Name="ChatMessagesList"
                                 SelectionMode="None"
                                 ItemsSource="{Binding Messages}">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <VerticalStackLayout Padding="0,5">
+                            <VerticalStackLayout Padding="0,6">
                                 <Frame BackgroundColor="{Binding MessageBgColor}"
-                                    CornerRadius="10"
-                                    Padding="12,8"
-                                    Margin="0,2"
+                                    CornerRadius="14"
+                                    Padding="14,10"
+                                    Margin="0,4"
                                     HasShadow="False">
                                     <Label Text="{Binding Content}"
                                         TextColor="Black"
                                         FontFamily="MiSans"
-                                        FontSize="13"
+                                        FontSize="14"
                                         LineBreakMode="WordWrap"/>
                                 </Frame>
                             </VerticalStackLayout>
@@ -265,20 +263,47 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <!-- Input Area -->
-                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,15,0,0">
-                    <Entry x:Name="ChatInput"
-                        Grid.Column="0"
-                        Placeholder="Type message..."
-                        FontFamily="MiSans"
-                        BackgroundColor="#F5F5F5"/>
+                <!-- Input Area (fixed) -->
+                <Grid Grid.Row="2"
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="12"
+                    Margin="0,10,0,0"
+                    Padding="10"
+                    BackgroundColor="White">
+
+                    <Grid.Shadow>
+                        <Shadow Brush="Black" Opacity="0.06" Radius="10" Offset="0,0"/>
+                    </Grid.Shadow>
+
+                    <!-- Bungkus Entry di Frame supaya bisa padding & corner radius -->
+                    <Frame Grid.Column="0"
+                        CornerRadius="12"
+                        Padding="12,8"
+                        BackgroundColor="#F0F0F0"
+                        HasShadow="False"
+                        HeightRequest="48"
+                        VerticalOptions="Center"
+                        HorizontalOptions="FillAndExpand">
+                        <Entry x:Name="ChatInput"
+                            Placeholder="Type message..."
+                            TextColor="Black"
+                            FontFamily="MiSans"
+                            BackgroundColor="Transparent"
+                            ClearButtonVisibility="WhileEditing"
+                            HorizontalOptions="FillAndExpand"
+                            VerticalOptions="Center" />
+                    </Frame>
+
                     <Button Grid.Column="1"
                             Text="Send"
                             FontFamily="MiSans"
+                            CornerRadius="12"
                             BackgroundColor="#3498DB"
                             TextColor="White"
-                            Clicked="OnSendMessageClicked"
-                            WidthRequest="60"/>
+                            WidthRequest="90"
+                            HeightRequest="48"
+                            Padding="0"
+                            Clicked="OnSendMessageClicked"/>
                 </Grid>
             </Grid>
         </Border>
@@ -292,17 +317,17 @@
                     AbsoluteLayout.LayoutBounds="0,0,1,1"
                     AbsoluteLayout.LayoutFlags="All">
             <Frame BackgroundColor="White"
-                Padding="20"
+                Padding="40"
                 CornerRadius="10"
                 VerticalOptions="Center"
                 HorizontalOptions="Center">
                 <VerticalStackLayout Spacing="10">
                     <Label x:Name="ModalTitle"  Text="Tambah Item" FontSize="18" TextColor="Black" FontFamily="MiSans" FontAttributes="Bold"/>
-                    <Entry x:Name="NameEntry" Placeholder="Nama barang"/>
-                    <Entry x:Name="StockEntry" Placeholder="Stock" Keyboard="Numeric"/>
-                    <Entry x:Name="PriceEntry" Placeholder="Harga" Keyboard="Numeric"/>
-                    <Button Text="Simpan" Clicked="OnSaveItemClicked" BackgroundColor="#00BFA5" TextColor="White"/>
-                    <Button Text="Batal" Clicked="OnCancelAddClicked" BackgroundColor="Transparent" TextColor="#E74C3C"/>
+                    <Entry x:Name="NameEntry" TextColor="Black" Placeholder="Nama barang" FontFamily="MiSans"/>
+                    <Entry x:Name="StockEntry" TextColor="Black" Placeholder="Stock" Keyboard="Numeric" FontFamily="MiSans"/>
+                    <Entry x:Name="PriceEntry" TextColor="Black" Placeholder="Harga" Keyboard="Numeric" FontFamily="MiSans"/>
+                    <Button Text="Simpan" Clicked="OnSaveItemClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
+                    <Button Text="Batal" Clicked="OnCancelAddClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
                 </VerticalStackLayout>
             </Frame>
         </ContentView>
