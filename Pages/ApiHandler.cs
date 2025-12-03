@@ -26,7 +26,7 @@ public class ApiHandler
     public const string LoginUrl = BaseUrl + "accounts/";
     public const string RegisterUrl = BaseUrl + "register/";
     public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-    private readonly string geminiApiKey = "AIzaSyCyMnef6WTNYb6xSe7dsiaZMTwgPmhYZfA";
+    private readonly string geminiApiKey = "";
     public string username = "";
     private static readonly HttpClient client = new HttpClient();
 
