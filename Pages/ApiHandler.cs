@@ -1,4 +1,3 @@
-#define GEMINI_API_KEY 
 using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -6,6 +5,7 @@ using System.IO;
 using System.Text;
 using dotenv.net;
 using InventorySystem.GlobalVariables;
+using InventorySystem.Controls;
 using Newtonsoft.Json.Serialization;
 
 namespace InventorySystem.Pages{
@@ -26,19 +26,21 @@ public class ApiHandler
     public const string BaseUrl = "https://ilmeee.com/smart_inventory_solution/";
     public const string LoginUrl = BaseUrl + "accounts/";
     public const string RegisterUrl = BaseUrl + "register/";
-    public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-    private const string geminiApiKey = "";
+    public const string getAllInformDatabase = BaseUrl + "get_allinform_database/";
+    public const string HandlerRequest = BaseUrl + "handler_request/";
+    public List<string> allModels =  new List<string>{ "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-pro" };
+    public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
+    private const string geminiApiKey = "AIzaSyDtwchMoGmwiEJI-N8jbt8NnDFRlYVmbe8";
     private static readonly HttpClient client = new HttpClient();
+    private int modelIndex = 0;
 
     public ApiHandler()
     {
-        // geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
-        
+        CheckApiKey();
     }
 
     public void CheckApiKey()
     {
-        // const string GEMINI_API_KEY = geminiApiKey;
         if (string.IsNullOrEmpty(geminiApiKey))
         {
             throw new InvalidOperationException("GEMINI_API_KEY is not set in environment variables.");   
@@ -62,6 +64,21 @@ public class ApiHandler
         return inventoryResponse;
     }
 
+    public async Task<ChatHistoryResponse> getInfoHistory(Dictionary<string, string> payload)
+    {
+        var content = new FormUrlEncodedContent(payload);
+
+        var handler = new HttpClientHandler { CookieContainer = new CookieContainer() };
+        using var client = new HttpClient(handler);
+        var response = await client.PostAsync(getAllInformDatabase, content);
+        var jsonString = await response.Content.ReadAsStringAsync();
+
+        // await SnackBar.Show($"Reponse: {jsonString}");
+        // Convert JSON string ke object InventoryResponse
+        var chatHistoryResponse = JsonConvert.DeserializeObject<ChatHistoryResponse>(jsonString);
+        return chatHistoryResponse;
+    }
+
     public async Task<ApiResponse> Post(string url, Dictionary<string, string> payload)
     {
         var content = new FormUrlEncodedContent(payload);
@@ -75,32 +92,38 @@ public class ApiHandler
 
     public async Task<GeminiResponse> PostGemini(GeminiRequest payload)
     {
-         
-            // Menggunakan camelCase untuk properti JSON sesuai konvensi API
-            var serializerSettings = new JsonSerializerSettings
+        // Menggunakan camelCase untuk properti JSON sesuai konvensi API
+        string currentModel = allModels[modelIndex];
+        var serializerSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
+        var jsonPayload = JsonConvert.SerializeObject(payload, serializerSettings);
+        var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+
+        var requestUri = $"{GeminiUrl}{currentModel}:generateContent?key={geminiApiKey}";
+
+        var response = await client.PostAsync(requestUri, content);
+
+
+        // 4. Tambahkan penanganan error yang kuat.
+        // Periksa jika request tidak berhasil (misalnya, status code 4xx atau 5xx).
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            if (modelIndex >= allModels.Count())
             {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
-            var jsonPayload = JsonConvert.SerializeObject(payload, serializerSettings);
-            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
-    
-            var requestUri = $"{GeminiUrl}?key={geminiApiKey}";
-    
-            var response = await client.PostAsync(requestUri, content);
-    
-            // 4. Tambahkan penanganan error yang kuat.
-            // Periksa jika request tidak berhasil (misalnya, status code 4xx atau 5xx).
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Request API gagal dengan status code {response.StatusCode}: {errorContent}");
+                modelIndex = 0;   
             }
-    
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var geminiResponse = JsonConvert.DeserializeObject<GeminiResponse>(responseContent);
-    
-            if (geminiResponse == null)
-            {
+            modelIndex++;
+            throw new HttpRequestException($"Request API gagal dengan status code {response.StatusCode}: {errorContent}");
+        }
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var geminiResponse = JsonConvert.DeserializeObject<GeminiResponse>(responseContent);
+
+        if (geminiResponse == null)
+        {
             throw new InvalidOperationException("Gagal melakukan deserialisasi respons dari GeminiAPI.");
         }
     

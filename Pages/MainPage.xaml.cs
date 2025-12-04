@@ -11,23 +11,32 @@ public partial class MainPage : ContentPage
 	private readonly BoxView Animator = new BoxView();
     public ObservableCollection<ChatMessage> Messages { get; set; } = new();
 	private ApiHandler apiHandler;
+    private HelperSql sqlHelper;
     private InventoryResponse inventoryData;
+    private ChatHistoryResponse historyResponse;
     private List<InventoryData> _originalInventory;
     public string token;
     public string username;
+    public string tableModelJsonFormat;
+    private string finishedSqlScript;
+    private string requestUser;
+    private string responseToUser;
+    private string currentMethod;
 
 	public MainPage()
 	{
 		InitializeComponent();
 		apiHandler = new ApiHandler();
         inventoryData = new InventoryResponse();
+        sqlHelper = new HelperSql();
         Sidebar.IsVisible = _isSidebarOpen;
 		LoadInventoryData();
-        getUserName();
+        GetUserName();
+        GetHistoryChat();
         BindingContext = this;
 	}
 
-    private async void getUserName()
+    private async void GetUserName()
     {
         var getUsername = await apiHandler.readUserName();
         username = getUsername ?? "";
@@ -53,6 +62,7 @@ public partial class MainPage : ContentPage
                 }
                 // await SnackBar.Show("Inventory data loaded successfully.");
                 UpdateStats(inventoryData.data);
+                GetTableModel();
             }
             else
             {
@@ -65,17 +75,17 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    private void OnSearchClicked(object sender, EventArgs e)
     {
-        string filter = e.NewTextValue?.ToLower() ?? "";
+        string filter = SearchEntry.Text?.ToLower() ?? "";
 
         // kalau kosong → reset full data + update stats
-        if (string.IsNullOrWhiteSpace(filter))
-        {
-            InventoryCollection.ItemsSource = _originalInventory;
-            // UpdateStats(_originalInventory);
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(filter))
+        // {
+        //     InventoryCollection.ItemsSource = _originalInventory;
+        //     // UpdateStats(_originalInventory);
+        //     return;
+        // }
 
         // kalau ada filter → jalanin pencarian
         if (InventoryCollection.ItemsSource is List<InventoryData> allItems)
@@ -86,6 +96,35 @@ public partial class MainPage : ContentPage
 
             InventoryCollection.ItemsSource = filteredItems;
         }
+        // var filteredItems = _originalInventory.FindAll(item =>
+        //     item.name.ToLower().Contains(filter) ||
+        //     item.ID.ToLower().Contains(filter));
+
+        // InventoryCollection.ItemsSource = filteredItems;
+    }
+
+    private async void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        string filter = e.NewTextValue?.ToLower() ?? "";
+
+        // // kalau kosong → reset full data + update stats
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            InventoryCollection.ItemsSource = _originalInventory;
+            await SnackBar.Show("Reset full data + update stats");
+            UpdateStats(_originalInventory);
+            return;
+        }
+
+        // // kalau ada filter → jalanin pencarian
+        // if (InventoryCollection.ItemsSource is List<InventoryData> allItems)
+        // {
+        //     var filteredItems = allItems.FindAll(item =>
+        //         item.name.ToLower().Contains(filter) ||
+        //         item.ID.ToLower().Contains(filter));
+
+        //     InventoryCollection.ItemsSource = filteredItems;
+        // }
         // var filteredItems = _originalInventory.FindAll(item =>
         //     item.name.ToLower().Contains(filter) ||
         //     item.ID.ToLower().Contains(filter));
@@ -112,8 +151,8 @@ public partial class MainPage : ContentPage
         { 
             if (int.TryParse(item.stock, out int stock) && decimal.TryParse(item.price, out decimal price)) 
             { 
-                int formattedPrice = (int)price;
-                await SnackBar.Show($"Price of: {item.name} is {formattedPrice}");
+                int formattedPrice = (int)price / 100;
+                // await SnackBar.Show($"Price of: {item.name} is {formattedPrice}");
                 totalValue += stock * formattedPrice; 
             } 
         } 
@@ -454,11 +493,13 @@ public partial class MainPage : ContentPage
         }
         
         AddMessageToChat($"You: {message}", false);
+        requestUser = message;
         // await SnackBar.Show($"Sending message to Gemini: {message}");
         ChatInput.Text = "";
 
         try
         {
+            string currentTableModel = tableModelJsonFormat;
             var geminiPayload = new GeminiRequest
             {
                 Contents = new List<Content>
@@ -466,7 +507,7 @@ public partial class MainPage : ContentPage
                     new Content
                     {
                         role = "user",
-                        parts = new List<Part> { new Part { text = message } }
+                        parts = new List<Part> { new Part { text = $"{message}, create with sql script only, the table model is {currentTableModel}" }}
                     }
                 }
             };
@@ -476,8 +517,16 @@ public partial class MainPage : ContentPage
             if (response.candidates != null)
             {
                 // await SnackBar.Show("Received response from Gemini.");
-                string botReply = response.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text ?? "Chatbot: (tidak ada respons)";
+                string botReply = response.candidates[0]?.content?.parts[0]?.text ?? "Chatbot: (tidak ada respons)";
+                // string getSqlScript = sqlHelper.wrapSqlScript(botReply);
                 // await SnackBar.Show($"Received response from Gemini: {botReply}");
+                finishedSqlScript = sqlHelper.RemoveSignScript(botReply);
+                await SnackBar.Show($"Received response from Gemini: {finishedSqlScript}");
+                string naturalLangConfirm = sqlHelper.ConvertSqlScriptToNaturalLanguage(finishedSqlScript);
+                responseToUser = naturalLangConfirm;
+                ConfirmModalTitle.Text = naturalLangConfirm;
+                AnimateConfirmModal();
+                // AddMessageToChat($"SQl Script {getSqlScript}", false);
                 AddMessageToChat($"Bot: {botReply}", true);
             }
             else
@@ -490,6 +539,29 @@ public partial class MainPage : ContentPage
         {
             AddMessageToChat($"Bot: Error occurred - {ex.Message}", true);
         }
+    }
+
+    bool _isConfirmModalOpen = false;
+    private async void AnimateConfirmModal()
+    {
+        if (_isConfirmModalOpen) return;
+
+        ConfirmModal.IsVisible = true;
+
+        // reset state sebelum animasi
+        ConfirmModal.Opacity = 0;
+        ConfirmModal.Scale = 0.8;
+
+        // animasi fade + zoom in
+        await Task.WhenAll(
+            ConfirmModal.FadeTo(1, 250, Easing.CubicIn),
+            ConfirmModal.ScaleTo(1, 250, Easing.CubicOut)
+        );
+    }
+
+    private async void OnConfirmLayoutTapped(object sender, EventArgs e)
+    {
+        AnimateDownConfirmModal();
     }
 
     private async void OnChatbotCloseClicked(object sender, EventArgs e)
@@ -520,5 +592,84 @@ public partial class MainPage : ContentPage
             });           
         }
     }
+    #endregion
+
+    #region Helper SQL
+    private async void GetTableModel()
+    {
+        var payload = new Dictionary<string, string>
+        {
+            {"type", "tables"},
+            {"token", token}
+        };
+
+        var response = await apiHandler.Post(ApiHandler.getAllInformDatabase, payload);
+        var json = await response.Response.Content.ReadAsStringAsync();
+        string jsonFormat = sqlHelper.FormattedJsonFile(json);
+        tableModelJsonFormat = jsonFormat;
+    }
+
+
+    private async void GetHistoryChat()
+    {
+        var payload = new Dictionary<string, string>
+        {
+            {"type", "history_chat"},
+            {"token", token}
+        };
+
+        var reponse = await apiHandler.getInfoHistory(payload);
+        historyResponse = reponse;
+
+        // foreach (ChatHistoryData data in historyResponse.data)
+        // {
+        //     // await SnackBar.Show($"History Request: {data.request}");
+        //     AddMessageToChat(data.request, false);
+        //     AddMessageToChat(data.response, true);
+        // }
+    }
+
+    private async void OnConfirmYesClicked(object sender, EventArgs e)
+    {
+        try
+        {
+            var payload = new Dictionary<string, string>
+            {
+                {"token", token},
+                {"action", "ask_ai"},
+                {"request", requestUser},
+                {"response", responseToUser},
+                {"sql_script", finishedSqlScript}
+            };
+
+            var response = await apiHandler.Post(ApiHandler.HandlerRequest, payload);
+            var json = await response.Response.Content.ReadAsStringAsync();
+            await SnackBar.Show($"Response: {json}");
+            LoadInventoryData();
+        }
+        catch (Exception ex)
+        {
+            await SnackBar.Show($"Failed to add item: {ex.Message}");
+        }
+        finally
+        {
+            AnimateDownConfirmModal();
+        }
+    }
+
+    private async void OnCancelConfirmClicked(object sender, EventArgs e)
+    {
+        AnimateDownConfirmModal();
+    }
+
+    private async void AnimateDownConfirmModal()
+    {
+        await Task.WhenAll(
+            ConfirmModal.FadeTo(0, 250, Easing.CubicIn),
+            ConfirmModal.ScaleTo(0.8, 250, Easing.CubicOut)
+        );
+        ConfirmModal.IsVisible = false;
+    }
+
     #endregion
 }

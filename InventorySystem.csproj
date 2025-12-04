@@ -43,6 +43,7 @@
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="CommunityToolkit.Maui" Version="13.0.0" />
         <PackageReference Include="dotenv.net" Version="4.0.0" />
+        <PackageReference Include="Google.GenAI" Version="0.6.0" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.11" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.6.25358.103" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

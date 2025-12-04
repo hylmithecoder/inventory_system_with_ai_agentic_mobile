@@ -103,33 +103,49 @@
                         <RoundRectangle CornerRadius="20"/>
                     </Border.StrokeShape>
                     <Border.Shadow>
-                        <Shadow Brush="#00BFA5" Opacity="0.4" Radius="10" Offset="0,5"/>
+                        <Shadow Brush="#00BFA5" Opacity="0.25" Radius="12" Offset="0,4"/>
                     </Border.Shadow>
 
-                    <Grid ColumnDefinitions="*,Auto" Padding="10" ColumnSpacing="10">
-                        <!-- Search -->
-                        <Grid Padding="12,6">
+                    <Grid ColumnDefinitions="*,Auto,Auto" Padding="12" ColumnSpacing="8">
+                        <!-- Search Entry -->
+                        <Border StrokeShape="RoundRectangle 18"
+                                BackgroundColor="#F5F5F5"
+                                StrokeThickness="0"
+                                Padding="8,0"
+                                VerticalOptions="Center">
                             <Entry x:Name="SearchEntry"
                                 Placeholder="Cari barang..."
                                 TextChanged="OnSearchTextChanged"
-                                WidthRequest="170"
-                                BackgroundColor="#F5F5F5"
+                                BackgroundColor="Transparent"
                                 TextColor="Black"
                                 FontSize="14"
                                 HeightRequest="38"
                                 HorizontalOptions="Fill"
-                                />                            
-                        </Grid>
+                                />
+                        </Border>
+
+                        <!-- Search Button -->
+                        <Button Grid.Column="1"
+                                Text="🔍"
+                                Clicked="OnSearchClicked"
+                                BackgroundColor="#00BFA5"
+                                TextColor="White"
+                                FontSize="16"
+                                CornerRadius="18"
+                                WidthRequest="44"
+                                HeightRequest="38"
+                                />
 
                         <!-- Add Button -->
-                        <Button Grid.Column="1"
-                                Text="Add"
+                        <Button Grid.Column="2"
+                                Text="+"
                                 Clicked="OnAddItemClicked"
                                 BackgroundColor="#00BFA5"
                                 TextColor="White"
-                                FontSize="14"
-                                CornerRadius="12"
-                                Padding="18,6"
+                                FontSize="20"
+                                CornerRadius="18"
+                                WidthRequest="44"
+                                HeightRequest="38"
                                 />
                     </Grid>
                 </Border>
@@ -344,6 +360,7 @@
             </Frame>
         </ContentView>
 
+        <!-- Choice Modal -->
         <ContentView x:Name="ChoiceModal"
                     IsVisible="False"
                     Opacity="0"
@@ -371,6 +388,36 @@
                             <Button Text="Batal" Clicked="OnCancelChoiceClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
                         </VerticalStackLayout>
                     </Frame>
+            </AbsoluteLayout>
+        </ContentView>
+
+        <!-- Confirm Modal -->
+        <ContentView x:Name="ConfirmModal"
+                    IsVisible="False"
+                    Opacity="0"
+                    Scale="0.8"
+                    BackgroundColor="#80000000"
+                    AbsoluteLayout.LayoutBounds="0,0,1,1"
+                    AbsoluteLayout.LayoutFlags="All">
+
+            <AbsoluteLayout x:Name="ConfirmModalLayout">
+
+                <!-- Gesture di overlay -->
+                <AbsoluteLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnConfirmLayoutTapped"/>
+                </AbsoluteLayout.GestureRecognizers>
+
+                <Frame BackgroundColor="White"
+                    Padding="30"
+                    CornerRadius="10"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center">
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="ConfirmModalTitle"  Text="Tambah Item" FontSize="18" TextColor="Black" FontFamily="MiSans" FontAttributes="Bold"/>
+                        <Button Text="Yes" Clicked="OnConfirmYesClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
+                        <Button Text="Cancel" Clicked="OnCancelConfirmClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
+                    </VerticalStackLayout>
+                </Frame>
             </AbsoluteLayout>
         </ContentView>
 

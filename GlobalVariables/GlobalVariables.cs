@@ -31,4 +31,22 @@ namespace InventorySystem.GlobalVariables
         public string MessageTextColor { get; set; } = "Black";
     }
 
+    #region Chat History Helper
+    public class ChatHistoryResponse
+    {
+        public string status { get; set; }
+        public string message { get; set; }
+        public List<ChatHistoryData>? data { get; set; }  
+    }
+
+    public class ChatHistoryData
+    {    
+        public string? ID { get; set; }
+        public string? created_at { get; set; }
+        public string? request { get; set; }
+        public string? response { get; set; }
+        public string? created_by { get; set; }
+    }
+
+    #endregion
 }
