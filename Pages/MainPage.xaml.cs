@@ -2,6 +2,7 @@ using System.Globalization;
 using InventorySystem.Utils;
 using InventorySystem.GlobalVariables;
 using System.Collections.ObjectModel;
+using InventorySystem.Controls;
 
 namespace InventorySystem.Pages;
 
@@ -10,6 +11,8 @@ public partial class MainPage : ContentPage
 	private readonly BoxView Animator = new BoxView();
     public ObservableCollection<ChatMessage> Messages { get; set; } = new();
 	private ApiHandler apiHandler;
+    private InventoryResponse inventoryData;
+    private List<InventoryData> _originalInventory;
     public string token;
     public string username;
 
@@ -17,6 +20,7 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 		apiHandler = new ApiHandler();
+        inventoryData = new InventoryResponse();
         Sidebar.IsVisible = _isSidebarOpen;
 		LoadInventoryData();
         getUserName();
@@ -35,22 +39,24 @@ public partial class MainPage : ContentPage
         try
         {
             var response = await apiHandler.getInfoInventory();
+            inventoryData = response;
 
-            if (response.status == "success" && response.data != null)
+            if (inventoryData.status == "success" && inventoryData.data != null)
             {
                 // Set data ke CollectionView
-                InventoryCollection.ItemsSource = response.data;
+                InventoryCollection.ItemsSource = inventoryData.data;
                 var getToken = apiHandler.readCookiesFile();
                 if (getToken != null)
                 {
                     token = await getToken;
+                    // await SnackBar.Show($"Token {token}");
                 }
-                await SnackBar.Show("Inventory data loaded successfully.");
-                UpdateStats(response.data);
+                // await SnackBar.Show("Inventory data loaded successfully.");
+                UpdateStats(inventoryData.data);
             }
             else
             {
-                await SnackBar.Show(response.message ?? "Failed to load data");
+                await SnackBar.Show(inventoryData.message ?? "Failed to load data");
             }
         }
         catch (Exception ex)
@@ -63,6 +69,15 @@ public partial class MainPage : ContentPage
     {
         string filter = e.NewTextValue?.ToLower() ?? "";
 
+        // kalau kosong → reset full data + update stats
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            InventoryCollection.ItemsSource = _originalInventory;
+            // UpdateStats(_originalInventory);
+            return;
+        }
+
+        // kalau ada filter → jalanin pencarian
         if (InventoryCollection.ItemsSource is List<InventoryData> allItems)
         {
             var filteredItems = allItems.FindAll(item =>
@@ -71,9 +86,14 @@ public partial class MainPage : ContentPage
 
             InventoryCollection.ItemsSource = filteredItems;
         }
+        // var filteredItems = _originalInventory.FindAll(item =>
+        //     item.name.ToLower().Contains(filter) ||
+        //     item.ID.ToLower().Contains(filter));
+
+        // InventoryCollection.ItemsSource = filteredItems;
     }
 
-    private void UpdateStats(List<InventoryData> data) { 
+    private async void UpdateStats(List<InventoryData> data) { 
         // Total Items 
         TotalItemsLabel.Text = data.Count.ToString(); 
         //Total Stock 
@@ -92,10 +112,12 @@ public partial class MainPage : ContentPage
         { 
             if (int.TryParse(item.stock, out int stock) && decimal.TryParse(item.price, out decimal price)) 
             { 
-                totalValue += (decimal)stock * price; 
+                int formattedPrice = (int)price;
+                await SnackBar.Show($"Price of: {item.name} is {formattedPrice}");
+                totalValue += stock * formattedPrice; 
             } 
         } 
-        TotalValueLabel.Text = $"Rp {totalValue:N2}"; 
+        TotalValueLabel.Text = $"Rp {totalValue:N0}"; 
     }
 
 
@@ -337,6 +359,10 @@ public partial class MainPage : ContentPage
         {
             await SnackBar.Show($"Failed to add item: {ex.Message}");
         }
+        finally
+        {
+            OnCancelAddClicked(sender, e);
+        }
     }
 
     private async void OnDeleteItemClicked(object sender, EventArgs e)
@@ -350,7 +376,7 @@ public partial class MainPage : ContentPage
                 var response = await apiHandler.Delete(deleteUrl);
 
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
-                // await SnackBar.Show($"Response: {responseContent}");
+                await SnackBar.Show($"Response: {responseContent}");
 
                 if (response.Response.IsSuccessStatusCode)
                 {
@@ -365,6 +391,10 @@ public partial class MainPage : ContentPage
         catch (Exception ex)
         {
             await SnackBar.Show($"Failed to delete item: {ex.Message}");
+        }
+        finally
+        {
+            OnCancelChoiceClicked(sender, e);
         }
     }
 
@@ -424,7 +454,7 @@ public partial class MainPage : ContentPage
         }
         
         AddMessageToChat($"You: {message}", false);
-        await SnackBar.Show($"Sending message to Gemini: {message}");
+        // await SnackBar.Show($"Sending message to Gemini: {message}");
         ChatInput.Text = "";
 
         try
@@ -441,14 +471,14 @@ public partial class MainPage : ContentPage
                 }
             };
 
-            await SnackBar.Show("Sending message to Gemini...");
+            // await SnackBar.Show("Sending message to Gemini...");
             var response = await apiHandler.PostGemini(geminiPayload);
             if (response.candidates != null)
             {
-                await SnackBar.Show("Received response from Gemini.");
+                // await SnackBar.Show("Received response from Gemini.");
                 string botReply = response.candidates?.FirstOrDefault()?.content?.parts?.FirstOrDefault()?.text ?? "Chatbot: (tidak ada respons)";
-                await SnackBar.Show($"Received response from Gemini: {botReply}");
-                AddMessageToChat($"{botReply}", true);
+                // await SnackBar.Show($"Received response from Gemini: {botReply}");
+                AddMessageToChat($"Bot: {botReply}", true);
             }
             else
             {
@@ -488,12 +518,6 @@ public partial class MainPage : ContentPage
                 MessageBgColor = "#E0F7FA",   // contoh warna bubble
                 MessageTextColor = "#333333"
             });           
-        }
-
-        // Scroll ke item terakhir
-        if (Messages.Any())
-        {
-            ChatMessagesList.ScrollTo(Messages.Last());
         }
     }
     #endregion

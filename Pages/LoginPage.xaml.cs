@@ -32,12 +32,10 @@ public partial class LoginPage : ContentPage
     private async void OnLoginClicked(object sender, EventArgs e)
     {
         LoginButton.IsEnabled = false;
-        LoginButton.Text = "Signing in...";
 
         try
         {
             string email = EmailEntry.Text?.Trim();
-            handlerApi.username = email;
             string password = PasswordEntry.Text;
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -45,6 +43,9 @@ public partial class LoginPage : ContentPage
                 await SnackBar.Show("Please enter your username and password.");
                 return;
             }
+            
+            LoginButton.Text = "Signing in...";
+
             await handlerApi.saveUserName(email);
             string sessionValue = await LoginAndGetSessionAsync(email, password);
 
@@ -83,7 +84,6 @@ public partial class LoginPage : ContentPage
             };
 
             // await SnackBar.Show($"Logging in... with email: {inputEmail} and password: {password}");
-            handlerApi.username = inputEmail;
             var apiResponse = await handlerApi.Post(ApiHandler.LoginUrl, payload);
             var responseContent = await apiResponse.Response.Content.ReadAsStringAsync();
 
@@ -125,6 +125,20 @@ public partial class LoginPage : ContentPage
         
         // Fade in animation
         this.Opacity = 0;
-        await this.FadeTo(1, 500);
+        await this.FadeTo(1, 100);
     }
+
+    private bool _isPasswordVisible = false;
+
+    private void OnTogglePasswordClicked(object sender, EventArgs e)
+    {
+        _isPasswordVisible = !_isPasswordVisible;
+
+        PasswordEntry.IsPassword = !_isPasswordVisible;
+
+        PasswordToggle.Source = _isPasswordVisible 
+            ? "isvisible.png" 
+            : "isnotvisible.png";
+    }
+
 }

@@ -10,9 +10,9 @@
         <!-- Gradient Background -->
         <Grid.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#667eea" Offset="0.0" />
-                <GradientStop Color="#764ba2" Offset="0.5" />
-                <GradientStop Color="#f093fb" Offset="1.0" />
+                <GradientStop Color="#42f5bf" Offset="0.0" />
+                <GradientStop Color="#42b9f5" Offset="0.5" />
+                <GradientStop Color="#42ecf5" Offset="1.0" />
             </LinearGradientBrush>
         </Grid.Background>
 
@@ -85,14 +85,8 @@
                                 FontFamily="Misans"
                                 FontSize="32"
                                 FontAttributes="Bold"
-                                TextColor="White"
+                                TextColor="Black"
                                 HorizontalTextAlignment="Center">
-                                <Label.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#667eea" Offset="0.0" />
-                                        <GradientStop Color="#764ba2" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </Label.Background>
                             </Label>
 
                             <Label Text="AI-Powered Inventory System"
@@ -148,35 +142,49 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- Password Field -->
                         <VerticalStackLayout Spacing="8">
                             <Label Text="PASSWORD"
-                                   FontFamily="Misans"
-                                   FontSize="12"
-                                   FontAttributes="Bold"
-                                   TextColor="#7f8c8d"
-                                   Margin="5,0,0,0" />
+                                FontFamily="Misans"
+                                FontSize="12"
+                                FontAttributes="Bold"
+                                TextColor="#7f8c8d"
+                                Margin="5,0,0,0" />
 
                             <Border StrokeThickness="1"
                                     StrokeShape="RoundRectangle 15"
                                     Stroke="#e0e0e0"
                                     BackgroundColor="#fafafa"
                                     Padding="0">
-                                <Grid ColumnDefinitions="Auto,*" Padding="15,0">
-                                    <Label Text="🔒"
-                                           FontSize="20"
-                                           VerticalOptions="Center"
-                                           Margin="0,0,12,0" />
+                                <Grid ColumnDefinitions="Auto,*,Auto" Padding="15,0">
 
+                                    <!-- Lock Icon -->
+                                    <Label Text="🔒"
+                                        FontSize="20"
+                                        VerticalOptions="Center"
+                                        Margin="0,0,12,0" />
+
+                                    <!-- Password Entry -->
                                     <Entry x:Name="PasswordEntry"
-                                           Grid.Column="1"
-                                           Placeholder="Enter your password"
-                                           PlaceholderColor="#bdc3c7"
-                                           IsPassword="True"
-                                           FontFamily="Misans"
-                                           FontSize="15"
-                                           TextColor="#2c3e50"
-                                           VerticalOptions="Center" />
+                                        Grid.Column="1"
+                                        Placeholder="Enter your password"
+                                        PlaceholderColor="#bdc3c7"
+                                        IsPassword="True"
+                                        FontFamily="Misans"
+                                        FontSize="15"
+                                        TextColor="#2c3e50"
+                                        VerticalOptions="Center" />
+
+                                    <!-- Toggle Visibility Icon -->
+                                    <ImageButton Grid.Column="2"
+                                                x:Name="PasswordToggle"
+                                                Source="isnotvisible.png"
+                                                BackgroundColor="Transparent"
+                                                HeightRequest="22"
+                                                WidthRequest="22"
+                                                Padding="6"
+                                                Clicked="OnTogglePasswordClicked"
+                                                HorizontalOptions="End"
+                                                VerticalOptions="Center"/>
                                 </Grid>
                             </Border>
                         </VerticalStackLayout>
@@ -185,7 +193,7 @@
                         <Grid ColumnDefinitions="*,Auto" Margin="5,0">
                             <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
                                 <CheckBox x:Name="RememberMeCheckBox"
-                                          Color="#667eea" />
+                                          Color="#42f5e0" />
                                 <Label Text="Remember Me"
                                        FontFamily="Misans"
                                        FontSize="13"
@@ -198,7 +206,7 @@
                                    FontFamily="Misans"
                                    FontSize="13"
                                    FontAttributes="Bold"
-                                   TextColor="#667eea"
+                                   TextColor="#42f5e0"
                                    VerticalOptions="Center">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnForgotPasswordTapped" />
@@ -213,16 +221,13 @@
                                 Margin="0,10,0,0">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#667eea" Offset="0.0" />
-                                    <GradientStop Color="#764ba2" Offset="1.0" />
+                                    <GradientStop Color="#42a4f5" Offset="0.0" />
+                                    <GradientStop Color="#42daf5" Offset="1.0" />
                                 </LinearGradientBrush>
                             </Border.Background>
-                            <Border.Shadow>
-                                <Shadow Brush="#667eea" Opacity="0.4" Radius="20" Offset="0,8" />
-                            </Border.Shadow>
 
                             <Button x:Name="LoginButton"
-                                    Text="Login Now"
+                                    Text="Sign In"
                                     BackgroundColor="Transparent"
                                     TextColor="White"
                                     FontFamily="Misans"
@@ -255,14 +260,15 @@
                                 Padding="0">
                             <Border.Stroke>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                    <GradientStop Color="#667eea" Offset="0.0" />
-                                    <GradientStop Color="#764ba2" Offset="1.0" />
+                                    <GradientStop Color="#42a4f5" Offset="0.0" />
+                                    <GradientStop Color="#42daf5" Offset="1.0" />
                                 </LinearGradientBrush>
                             </Border.Stroke>
 
                             <Button x:Name="RegisterButton"
                                     Text="Create New Account"
                                     BackgroundColor="Transparent"
+                                    TextColor="White"
                                     FontFamily="Misans"
                                     FontSize="16"
                                     FontAttributes="Bold"
@@ -270,8 +276,8 @@
                                     Clicked="OnSignUpTapped">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#667eea" Offset="0.0" />
-                                        <GradientStop Color="#764ba2" Offset="1.0" />
+                                        <GradientStop Color="#42a4f5" Offset="0.0" />
+                                        <GradientStop Color="#42daf5" Offset="1.0" />
                                     </LinearGradientBrush>
                                 </Button.Background>
                             </Button>
@@ -285,9 +291,6 @@
                                 Padding="15,12"
                                 Margin="0,10,0,0">
                             <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                                <Label Text="🤖"
-                                       FontSize="18"
-                                       VerticalOptions="Center" />
                                 <Label Text="Powered by AI Agentic Technology"
                                        FontFamily="Misans"
                                        FontSize="11"

@@ -18,12 +18,18 @@ public partial class RegisterPage : ContentPage
     private async void OnRegisterClicked(object sender, EventArgs e)
     {
         string username = UsernameEntry.Text?.Trim();
-        string email = EmailEntry.Text?.Trim();
         string password = PasswordEntry.Text;
+        string verifyPassword = VerifyPasswordEntry.Text;
 
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(verifyPassword) || string.IsNullOrWhiteSpace(password))
         {
             await SnackBar.Show("Please fill out all fields.");
+            return;
+        }
+
+        if (password != verifyPassword)
+        {
+            await SnackBar.Show("Passwords do not match.");
             return;
         }
 
@@ -52,7 +58,7 @@ public partial class RegisterPage : ContentPage
         }
     }
 
-    private async void OnLoginTapped(object sender, EventArgs e)
+    private async void OnSignInTapped(object sender, EventArgs e)
     {
         await Shell.Current.GoToAsync("//LoginPage");
     }

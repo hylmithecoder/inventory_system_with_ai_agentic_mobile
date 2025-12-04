@@ -32,15 +32,6 @@
                         TextColor="#333333"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"/>
-
-                    <!-- Search -->
-                    <Entry Grid.Column="2"
-                        x:Name="SearchEntry"
-                        Placeholder="Cari barang..."
-                        TextChanged="OnSearchTextChanged"
-                        WidthRequest="150"
-                        HorizontalOptions="End"/>
-                    
                 </Grid>
 
                 <!-- Card Stats -->
@@ -104,7 +95,6 @@
                 </Grid>
 
 
-                <!-- Add button -->
                 <Border Grid.Column="2"
                         BackgroundColor="Transparent"
                         Padding="0"
@@ -115,13 +105,35 @@
                     <Border.Shadow>
                         <Shadow Brush="#00BFA5" Opacity="0.4" Radius="10" Offset="0,5"/>
                     </Border.Shadow>
-                    <Button Text="Add Item"
-                            Clicked="OnAddItemClicked"
-                            BackgroundColor="#00BFA5"
-                            TextColor="White"
-                            FontSize="20"
-                            CornerRadius="10"/>
+
+                    <Grid ColumnDefinitions="*,Auto" Padding="10" ColumnSpacing="10">
+                        <!-- Search -->
+                        <Grid Padding="12,6">
+                            <Entry x:Name="SearchEntry"
+                                Placeholder="Cari barang..."
+                                TextChanged="OnSearchTextChanged"
+                                WidthRequest="170"
+                                BackgroundColor="#F5F5F5"
+                                TextColor="Black"
+                                FontSize="14"
+                                HeightRequest="38"
+                                HorizontalOptions="Fill"
+                                />                            
+                        </Grid>
+
+                        <!-- Add Button -->
+                        <Button Grid.Column="1"
+                                Text="Add"
+                                Clicked="OnAddItemClicked"
+                                BackgroundColor="#00BFA5"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="12"
+                                Padding="18,6"
+                                />
+                    </Grid>
                 </Border>
+
                 <!-- Inventory List -->
                 <Border BackgroundColor="White" Padding="0"
                         StrokeThickness="0">
@@ -317,7 +329,7 @@
                     AbsoluteLayout.LayoutBounds="0,0,1,1"
                     AbsoluteLayout.LayoutFlags="All">
             <Frame BackgroundColor="White"
-                Padding="40"
+                Padding="70"
                 CornerRadius="10"
                 VerticalOptions="Center"
                 HorizontalOptions="Center">
@@ -348,15 +360,15 @@
                 </AbsoluteLayout.GestureRecognizers>
                     <Frame x:Name="ChoiceFrame"
                         BackgroundColor="White"
-                        Padding="20"
+                        Padding="50"
                         CornerRadius="10"
-                        AbsoluteLayout.LayoutBounds="0,0,AutoSize,AutoSize"
-                        AbsoluteLayout.LayoutFlags="None">
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
                         <VerticalStackLayout Spacing="10">
                             <Label Text="Pilih Aksi" FontSize="18" FontAttributes="Bold"/>
-                            <Button Text="Edit" Clicked="OnEditItemClicked" BackgroundColor="#00BFA5" TextColor="White"/>
-                            <Button Text="Hapus" Clicked="OnDeleteItemClicked" BackgroundColor="#E74C3C" TextColor="White"/>
-                            <Button Text="Batal" Clicked="OnCancelChoiceClicked" BackgroundColor="Transparent" TextColor="#E74C3C"/>
+                            <Button Text="Edit" Clicked="OnEditItemClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
+                            <Button Text="Hapus" Clicked="OnDeleteItemClicked" BackgroundColor="#E74C3C" TextColor="White" FontFamily="MiSans"/>
+                            <Button Text="Batal" Clicked="OnCancelChoiceClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
                         </VerticalStackLayout>
                     </Frame>
             </AbsoluteLayout>
@@ -381,14 +393,14 @@
                 BackgroundColor="White"
                 Padding="0"
                 IsVisible="False">
-            <Border.Shadow>
+            <!-- <Border.Shadow>
                 <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="5,0"/>
-            </Border.Shadow>
+            </Border.Shadow> -->
 
             <Grid RowDefinitions="Auto,*" Padding="20">
                 <!-- Header dengan tombol close -->
                 <Grid>
-                    <Label Text="Inventory"
+                    <Label Text="Inventory System"
                         FontSize="20"
                         FontAttributes="Bold"
                         TextColor="#333333"

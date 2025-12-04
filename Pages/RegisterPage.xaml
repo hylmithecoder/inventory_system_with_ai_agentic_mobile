@@ -2,102 +2,329 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:InventorySystem.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="InventorySystem.Pages.RegisterPage"
-             BackgroundColor="White"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto, *">
+    <Grid>
+        <!-- Gradient Background -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#42f5bf" Offset="0.0" />
+                <GradientStop Color="#42b9f5" Offset="0.5" />
+                <GradientStop Color="#42ecf5" Offset="1.0" />
+            </LinearGradientBrush>
+        </Grid.Background>
 
-        <!-- Header -->
-        <Label Grid.Row="0"
-               Text="Register"
-               FontSize="24"
-               FontAttributes="Bold"
-               TextColor="#333333"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               Margin="0,40,0,20"/>
+        <!-- Animated Background Circles -->
+        <Ellipse WidthRequest="300" 
+                 HeightRequest="300"
+                 Fill="#30FFFFFF"
+                 HorizontalOptions="Start"
+                 VerticalOptions="Start"
+                 Margin="-100,-100,0,0">
+            <Ellipse.Shadow>
+                <Shadow Brush="White" Opacity="0.3" Radius="40" Offset="0,0" />
+            </Ellipse.Shadow>
+        </Ellipse>
 
-        <!-- Form -->
-        <VerticalStackLayout Grid.Row="1"
-                             Spacing="20"
-                             Padding="30,0"
-                             VerticalOptions="Center">
+        <Ellipse WidthRequest="200" 
+                 HeightRequest="200"
+                 Fill="#20FFFFFF"
+                 HorizontalOptions="End"
+                 VerticalOptions="End"
+                 Margin="0,0,-80,-80">
+            <Ellipse.Shadow>
+                <Shadow Brush="White" Opacity="0.2" Radius="30" Offset="0,0" />
+            </Ellipse.Shadow>
+        </Ellipse>
 
-            <!-- Username -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Username"
-                       FontSize="14"
-                       TextColor="#666666"/>
-                <Frame Padding="15,0"
-                       CornerRadius="10"
-                       BorderColor="#E0E0E0"
-                       BackgroundColor="#F5F5F5">
-                    <Entry x:Name="UsernameEntry"
-                           Placeholder="Enter your username"
-                           FontSize="16"
-                           TextColor="#333333"/>
-                </Frame>
+        <!-- Main Content -->
+        <ScrollView>
+            <VerticalStackLayout Padding="30" Spacing="0" VerticalOptions="Center">
+
+                <!-- Logo Container with Animation -->
+                <Border StrokeThickness="4"
+                        StrokeShape="RoundRectangle 80"
+                        Stroke="White"
+                        BackgroundColor="#40FFFFFF"
+                        WidthRequest="140"
+                        HeightRequest="140"
+                        HorizontalOptions="Center"
+                        Margin="0,0,0,30">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.3" Radius="30" Offset="0,10" />
+                    </Border.Shadow>
+                    <Grid>
+                        <Image Source="Images/avatar.png"
+                               Aspect="AspectFill"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center">
+                            <Image.Clip>
+                                <EllipseGeometry Center="70,70" RadiusX="60" RadiusY="60" />
+                            </Image.Clip>
+                        </Image>
+                    </Grid>
+                </Border>
+
+                <!-- Welcome Card -->
+                <Border StrokeThickness="0"
+                        StrokeShape="RoundRectangle 30"
+                        BackgroundColor="White"
+                        Padding="35,40"
+                        Margin="0,0,0,20">
+                    <Border.Shadow>
+                        <Shadow Brush="Black" Opacity="0.2" Radius="40" Offset="0,15" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="25">
+                        <!-- Header Text -->
+                        <VerticalStackLayout Spacing="8" Margin="0,0,0,10">
+                            
+                            <Label Text="Welcome Back!"
+                                FontFamily="Misans"
+                                FontSize="32"
+                                FontAttributes="Bold"
+                                TextColor="Black"
+                                HorizontalTextAlignment="Center">
+                            </Label>
+
+                            <Label Text="AI-Powered Inventory System"
+                                   FontFamily="Misans"
+                                   FontSize="14"
+                                   TextColor="#95a5a6"
+                                   HorizontalTextAlignment="Center"
+                                   Margin="0,0,0,5" />
+
+                            <BoxView HeightRequest="3"
+                                     WidthRequest="60"
+                                     CornerRadius="2"
+                                     HorizontalOptions="Center"
+                                     Margin="0,5,0,0">
+                                <BoxView.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#667eea" Offset="0.0" />
+                                        <GradientStop Color="#00BFA5" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </BoxView.Background>
+                            </BoxView>
+                        </VerticalStackLayout>
+
+                        <!-- Username Field -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="USERNAME"
+                                   FontFamily="Misans"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#7f8c8d"
+                                   Margin="5,0,0,0" />
+
+                            <Border StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 15"
+                                    Stroke="#e0e0e0"
+                                    BackgroundColor="#fafafa"
+                                    Padding="0">
+                                <Grid ColumnDefinitions="Auto,*" Padding="15,0">
+                                    <Label Text="👤"
+                                           FontSize="20"
+                                           VerticalOptions="Center"
+                                           Margin="0,0,12,0" />
+
+                                    <Entry x:Name="UsernameEntry"
+                                           Grid.Column="1"
+                                           Placeholder="Enter your username"
+                                           PlaceholderColor="#bdc3c7"
+                                           FontFamily="Misans"
+                                           FontSize="15"
+                                           TextColor="#2c3e50"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Password Field -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="PASSWORD"
+                                   FontFamily="Misans"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#7f8c8d"
+                                   Margin="5,0,0,0" />
+
+                            <Border StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 15"
+                                    Stroke="#e0e0e0"
+                                    BackgroundColor="#fafafa"
+                                    Padding="0">
+                                <Grid ColumnDefinitions="Auto,*" Padding="15,0">
+                                    <Label Text="🔒"
+                                           FontSize="20"
+                                           VerticalOptions="Center"
+                                           Margin="0,0,12,0" />
+
+                                    <Entry x:Name="PasswordEntry"
+                                           Grid.Column="1"
+                                           Placeholder="Create your password"
+                                           PlaceholderColor="#bdc3c7"
+                                           IsPassword="True"
+                                           FontFamily="Misans"
+                                           FontSize="15"
+                                           TextColor="#2c3e50"
+                                           VerticalOptions="Center" />
+                                    
+                                    <Label Grid.Column="1"
+                                           Text="Show"
+                                           FontFamily="Misans"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           TextColor="#667eea"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Verify Password Field -->
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="VERIDY PASSWORD"
+                                   FontFamily="Misans"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#7f8c8d"
+                                   Margin="5,0,0,0" />
+
+                            <Border StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 15"
+                                    Stroke="#e0e0e0"
+                                    BackgroundColor="#fafafa"
+                                    Padding="0">
+                                <Grid ColumnDefinitions="Auto,*" Padding="15,0">
+                                    <Label Text="🔒"
+                                           FontSize="20"
+                                           VerticalOptions="Center"
+                                           Margin="0,0,12,0" />
+
+                                    <Entry x:Name="VerifyPasswordEntry"
+                                           Grid.Column="1"
+                                           Placeholder="Enter your password again"
+                                           PlaceholderColor="#bdc3c7"
+                                           IsPassword="True"
+                                           FontFamily="Misans"
+                                           FontSize="15"
+                                           TextColor="#2c3e50"
+                                           VerticalOptions="Center" />
+                                    
+                                    <Label Grid.Column="1"
+                                           Text="Show"
+                                           FontFamily="Misans"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           TextColor="#667eea"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Register Button -->
+                        <Border StrokeThickness="0"
+                                StrokeShape="RoundRectangle 25"
+                                Padding="0"
+                                Margin="0,10,0,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#42a4f5" Offset="0.0" />
+                                    <GradientStop Color="#42daf5" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+
+                            <Button x:Name="RegisterButton"
+                                    Text="Register"
+                                    BackgroundColor="Transparent"
+                                    TextColor="White"
+                                    FontFamily="Misans"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    HeightRequest="55"
+                                    Clicked="OnRegisterClicked" />
+                        </Border>
+
+                        <!-- Divider -->
+                        <Grid ColumnDefinitions="*,Auto,*" Margin="0,10,0,5">
+                            <BoxView HeightRequest="1"
+                                     BackgroundColor="#e0e0e0"
+                                     VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="  OR  "
+                                   FontFamily="Misans"
+                                   FontSize="12"
+                                   TextColor="#95a5a6"
+                                   VerticalOptions="Center" />
+                            <BoxView Grid.Column="2"
+                                     HeightRequest="1"
+                                     BackgroundColor="#e0e0e0"
+                                     VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- Login Button -->
+                        <Border StrokeThickness="2"
+                                StrokeShape="RoundRectangle 25"
+                                Padding="0">
+                            <Border.Stroke>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#42a4f5" Offset="0.0" />
+                                    <GradientStop Color="#42daf5" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Stroke>
+
+                            <Button x:Name="LoginButton"
+                                    Text="Sign In"
+                                    BackgroundColor="Transparent"
+                                    TextColor="White"
+                                    FontFamily="Misans"
+                                    FontSize="16"
+                                    FontAttributes="Bold"
+                                    HeightRequest="55"
+                                    Clicked="OnSignInTapped">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#42a4f5" Offset="0.0" />
+                                        <GradientStop Color="#42daf5" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                            </Button>
+                        </Border>
+
+                        <!-- AI Badge -->
+                        <Border StrokeThickness="1"
+                                StrokeShape="RoundRectangle 20"
+                                Stroke="#e0e0e0"
+                                BackgroundColor="#f8f9fa"
+                                Padding="15,12"
+                                Margin="0,10,0,0">
+                            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                                <Label Text="Powered by AI Agentic Technology"
+                                       FontFamily="Misans"
+                                       FontSize="11"
+                                       TextColor="#7f8c8d"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Footer Text -->
+                <Label Text="Smart Inventory System Solution v1.0"
+                       FontFamily="Misans"
+                       FontSize="12"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center"
+                       Opacity="0.8"
+                       Margin="0,20,0,0" />
             </VerticalStackLayout>
+        </ScrollView>
 
-            <!-- Email -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Email"
-                       FontSize="14"
-                       TextColor="#666666"/>
-                <Frame Padding="15,0"
-                       CornerRadius="10"
-                       BorderColor="#E0E0E0"
-                       BackgroundColor="#F5F5F5">
-                    <Entry x:Name="EmailEntry"
-                           Placeholder="Enter your email"
-                           FontSize="16"
-                           Keyboard="Email"
-                           TextColor="#333333"/>
-                </Frame>
-            </VerticalStackLayout>
-
-            <!-- Password -->
-            <VerticalStackLayout Spacing="5">
-                <Label Text="Password"
-                       FontSize="14"
-                       TextColor="#666666"/>
-                <Frame Padding="15,0"
-                       CornerRadius="10"
-                       BorderColor="#E0E0E0"
-                       BackgroundColor="#F5F5F5">
-                    <Entry x:Name="PasswordEntry"
-                           Placeholder="Enter your password"
-                           IsPassword="True"
-                           FontSize="16"
-                           TextColor="#333333"/>
-                </Frame>
-            </VerticalStackLayout>
-
-            <!-- Register Button -->
-            <Button x:Name="RegisterButton"
-                    Text="Register"
-                    BackgroundColor="#00BFA5"
-                    TextColor="White"
-                    CornerRadius="25"
-                    HeightRequest="50"
-                    FontSize="18"
-                    FontAttributes="Bold"
-                    Clicked="OnRegisterClicked"/>
-
-            <!-- Login Link -->
-            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
-                <Label Text="Already have an account?"/>
-                <Label Text="Login"
-                       TextColor="#00BFA5"
-                       FontAttributes="Bold">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnLoginTapped"/>
-                    </Label.GestureRecognizers>
-                </Label>
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
-
-        <controls:SnackBar x:Name="SnackBar" Grid.Row="1"/>
+        <!-- SnackBar -->
+        <controls:SnackBar x:Name="SnackBar" />
     </Grid>
 </ContentPage>

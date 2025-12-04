@@ -1,3 +1,4 @@
+#define GEMINI_API_KEY 
 using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -26,16 +27,21 @@ public class ApiHandler
     public const string LoginUrl = BaseUrl + "accounts/";
     public const string RegisterUrl = BaseUrl + "register/";
     public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
-    private readonly string geminiApiKey = "";
-    public string username = "";
+    private const string geminiApiKey = "";
     private static readonly HttpClient client = new HttpClient();
 
     public ApiHandler()
     {
         // geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+        
+    }
+
+    public void CheckApiKey()
+    {
+        // const string GEMINI_API_KEY = geminiApiKey;
         if (string.IsNullOrEmpty(geminiApiKey))
         {
-            throw new InvalidOperationException("GEMINI_API_KEY is not set in environment variables.");
+            throw new InvalidOperationException("GEMINI_API_KEY is not set in environment variables.");   
         }
     }
 
