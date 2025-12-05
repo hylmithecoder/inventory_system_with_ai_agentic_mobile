@@ -494,6 +494,8 @@ namespace InventorySystem.GlobalVariables
                 RegexOptions.IgnoreCase | RegexOptions.Multiline
             );
 
+            result = Regex.Replace(result, @"\r\n?|\n", " ");
+
             return result.Trim();
         }
     }

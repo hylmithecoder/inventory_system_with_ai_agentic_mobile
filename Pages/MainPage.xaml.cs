@@ -455,6 +455,8 @@ public partial class MainPage : ContentPage
 
         if (_isChatbotOpen)
         {
+            await Task.Delay(100);
+            
             ChatbotSidebar.IsVisible = true;
             ChatbotOverlay.IsVisible = true;
             await Task.WhenAll(
@@ -465,6 +467,8 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            await Task.Delay(100);
+
             await Task.WhenAll(
                 ChatbotSidebar.SlideOutToRight(width, duration),
                 ChatbotSidebar.FadeTo(0, duration),
@@ -507,7 +511,7 @@ public partial class MainPage : ContentPage
                     new Content
                     {
                         role = "user",
-                        parts = new List<Part> { new Part { text = $"{message}, create with sql script only, the table model is {currentTableModel}" }}
+                        parts = new List<Part> { new Part { text = $"{message}, you just create with a sql script only skip all the explain and commentar, the table model is {currentTableModel}" }}
                     }
                 }
             };
@@ -621,12 +625,11 @@ public partial class MainPage : ContentPage
         var reponse = await apiHandler.getInfoHistory(payload);
         historyResponse = reponse;
 
-        // foreach (ChatHistoryData data in historyResponse.data)
-        // {
-        //     // await SnackBar.Show($"History Request: {data.request}");
-        //     AddMessageToChat(data.request, false);
-        //     AddMessageToChat(data.response, true);
-        // }
+        foreach (ChatHistoryData data in historyResponse.data)
+        {
+            AddMessageToChat(data.request, false);
+            AddMessageToChat(data.response, true);
+        }
     }
 
     private async void OnConfirmYesClicked(object sender, EventArgs e)
@@ -643,6 +646,11 @@ public partial class MainPage : ContentPage
             };
 
             var response = await apiHandler.Post(ApiHandler.HandlerRequest, payload);
+            if (!response.Response.IsSuccessStatusCode)
+            {
+                await SnackBar.Show("Failed to add item. Please try logout and login again.");
+            }
+
             var json = await response.Response.Content.ReadAsStringAsync();
             await SnackBar.Show($"Response: {json}");
             LoadInventoryData();
