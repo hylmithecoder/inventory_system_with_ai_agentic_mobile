@@ -3,7 +3,9 @@ using InventorySystem.Utils;
 using InventorySystem.GlobalVariables;
 using System.Collections.ObjectModel;
 using InventorySystem.Controls;
-
+using Newtonsoft.Json.Linq;
+using CommunityToolkit.Maui.Media;
+using CommunityToolkit.Maui.Alerts;
 namespace InventorySystem.Pages;
 
 public partial class MainPage : ContentPage
@@ -15,25 +17,26 @@ public partial class MainPage : ContentPage
     private InventoryResponse inventoryData;
     private ChatHistoryResponse historyResponse;
     private List<InventoryData> _originalInventory;
-    public string token;
-    public string username;
-    public string tableModelJsonFormat;
-    private string finishedSqlScript;
-    private string requestUser;
-    private string responseToUser;
-    private string currentMethod;
+    private string username, tableModelJsonFormat, finishedSqlScript, requestUser, responseToUser, token;
+    public string recognitedText { get; set; } = string.Empty;
+    private readonly ISpeechToText speechToText;
+    private bool _isListening = false, _isSidebarOpen = false, _isItemTapped = false, _isEditing = false,  _isChatbotOpen = false, _isConfirmModalOpen = false, _isClickConfirmed = false;
+    private CancellationTokenSource _cts;
 
-	public MainPage()
+	public MainPage(ISpeechToText speechToText)
 	{
 		InitializeComponent();
 		apiHandler = new ApiHandler();
         inventoryData = new InventoryResponse();
         sqlHelper = new HelperSql();
+        _cts = new CancellationTokenSource();
         Sidebar.IsVisible = _isSidebarOpen;
 		LoadInventoryData();
         GetUserName();
         GetHistoryChat();
+        RequestMicrophonePermissionAsync();
         BindingContext = this;
+        this.speechToText = speechToText;
 	}
 
     private async void GetUserName()
@@ -53,6 +56,7 @@ public partial class MainPage : ContentPage
             if (inventoryData.status == "success" && inventoryData.data != null)
             {
                 // Set data ke CollectionView
+                _originalInventory = inventoryData.data;
                 InventoryCollection.ItemsSource = inventoryData.data;
                 var getToken = apiHandler.readCookiesFile();
                 if (getToken != null)
@@ -79,15 +83,6 @@ public partial class MainPage : ContentPage
     {
         string filter = SearchEntry.Text?.ToLower() ?? "";
 
-        // kalau kosong → reset full data + update stats
-        // if (string.IsNullOrWhiteSpace(filter))
-        // {
-        //     InventoryCollection.ItemsSource = _originalInventory;
-        //     // UpdateStats(_originalInventory);
-        //     return;
-        // }
-
-        // kalau ada filter → jalanin pencarian
         if (InventoryCollection.ItemsSource is List<InventoryData> allItems)
         {
             var filteredItems = allItems.FindAll(item =>
@@ -96,71 +91,49 @@ public partial class MainPage : ContentPage
 
             InventoryCollection.ItemsSource = filteredItems;
         }
-        // var filteredItems = _originalInventory.FindAll(item =>
-        //     item.name.ToLower().Contains(filter) ||
-        //     item.ID.ToLower().Contains(filter));
-
-        // InventoryCollection.ItemsSource = filteredItems;
     }
 
     private async void OnSearchTextChanged(object sender, TextChangedEventArgs e)
     {
         string filter = e.NewTextValue?.ToLower() ?? "";
 
-        // // kalau kosong → reset full data + update stats
         if (string.IsNullOrWhiteSpace(filter))
         {
             InventoryCollection.ItemsSource = _originalInventory;
-            await SnackBar.Show("Reset full data + update stats");
-            UpdateStats(_originalInventory);
             return;
         }
-
-        // // kalau ada filter → jalanin pencarian
-        // if (InventoryCollection.ItemsSource is List<InventoryData> allItems)
-        // {
-        //     var filteredItems = allItems.FindAll(item =>
-        //         item.name.ToLower().Contains(filter) ||
-        //         item.ID.ToLower().Contains(filter));
-
-        //     InventoryCollection.ItemsSource = filteredItems;
-        // }
-        // var filteredItems = _originalInventory.FindAll(item =>
-        //     item.name.ToLower().Contains(filter) ||
-        //     item.ID.ToLower().Contains(filter));
-
-        // InventoryCollection.ItemsSource = filteredItems;
     }
 
-    private async void UpdateStats(List<InventoryData> data) { 
-        // Total Items 
-        TotalItemsLabel.Text = data.Count.ToString(); 
-        //Total Stock 
-        int totalStock = 0; 
-        foreach (var item in data) 
-        { 
-            if (int.TryParse(item.stock, out int stock)) 
-            { 
-                totalStock += stock; 
-            } 
-        } 
-        TotalStockLabel.Text = totalStock.ToString("N0"); 
-        // Total Value (stock * price) 
-        decimal totalValue = 0; 
-        foreach (var item in data) 
-        { 
-            if (int.TryParse(item.stock, out int stock) && decimal.TryParse(item.price, out decimal price)) 
-            { 
-                int formattedPrice = (int)price / 100;
-                // await SnackBar.Show($"Price of: {item.name} is {formattedPrice}");
-                totalValue += stock * formattedPrice; 
-            } 
-        } 
-        TotalValueLabel.Text = $"Rp {totalValue:N0}"; 
+    private async void UpdateStats(List<InventoryData> data)
+    {
+        // Total Items
+        TotalItemsLabel.Text = data.Count.ToString();
+
+        // Total Stock
+        long totalStock = 0; // pakai long
+        foreach (var item in data)
+        {
+            if (long.TryParse(item.stock, out long stock))
+            {
+                totalStock += stock;
+            }
+        }
+        TotalStockLabel.Text = totalStock.ToString("N0");
+
+        // Total Value
+        decimal totalValue = 0;
+        foreach (var item in data)
+        {
+            if (long.TryParse(item.stock, out long stock) && decimal.TryParse(item.price, out decimal price))
+            {
+                // jangan cast ke int, langsung pakai decimal
+                decimal formattedPrice = price / 100m;
+                totalValue += stock * formattedPrice;
+            }
+        }
+        TotalValueLabel.Text = $"Rp {totalValue:N0}";
     }
 
-
-	private bool _isSidebarOpen = false;
 	private async void OnClickSideBar(object sender, EventArgs e)
 	{
 		_isSidebarOpen = !_isSidebarOpen;
@@ -210,32 +183,39 @@ public partial class MainPage : ContentPage
     }
 
     // Button Item Tapped
-    private bool _isItemTapped = false;
     private async void OnItemTapped(object sender, EventArgs e)
     {
-        if (_isItemTapped) return; // Prevent multiple taps
+        if (_isItemTapped) return;
         _isItemTapped = true;
+
         if (sender is Border border && border.BindingContext is InventoryData item)
         {
-            // Ambil posisi relatif ke parent AbsoluteLayout
             var bounds = AbsoluteLayout.GetLayoutBounds(border);
 
-            // Atur posisi ChoiceFrame dekat border
+            // Posisi tepat di bawah item yang diklik
             AbsoluteLayout.SetLayoutBounds(ChoiceFrame,
-                new Rect(bounds.X, bounds.Y + border.Height + 5, ChoiceFrame.Width, ChoiceFrame.Height));
+                new Rect(bounds.X, bounds.Y + border.Height + 5,
+                        ChoiceFrame.Width, ChoiceFrame.Height));
 
             ChoiceModal.IsVisible = true;
             ChoiceModal.BindingContext = item;
 
-            // Animasi muncul
+            // Reset state
             ChoiceModal.Opacity = 0;
-            ChoiceModal.Scale = 0.8;
-            await Task.WhenAll(
-                ChoiceModal.FadeTo(1, 250, Easing.CubicIn),
-                ChoiceModal.ScaleTo(1, 250, Easing.CubicOut)
-            );
+            ChoiceModal.Scale = 0.7;
+
+            // Fade + wave scale
+            await ChoiceModal.FadeTo(1, 200, Easing.CubicIn);
+
+            // Wave effect: scale up → scale down → settle
+            await ChoiceModal.ScaleTo(1.1, 150, Easing.SinOut);
+            await ChoiceModal.ScaleTo(0.95, 150, Easing.SinIn);
+            await ChoiceModal.ScaleTo(1.0, 150, Easing.CubicOut);
+
+            _isItemTapped = false;
         }
     }
+
 
     private async void OnChoiceLayoutTapped(object sender, EventArgs e)
     {
@@ -293,7 +273,6 @@ public partial class MainPage : ContentPage
         );
     }
 
-    private bool _isEditing = false;
     private async void OnEditItemClicked(object sender, EventArgs e)
     {
         _isEditing = true;
@@ -362,7 +341,6 @@ public partial class MainPage : ContentPage
                 payload["_method"] = "PUT";
                 var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
-                // await SnackBar.Show($"Response: {responseContent}");
 
                 if (response.Response.IsSuccessStatusCode)
                 {
@@ -372,16 +350,13 @@ public partial class MainPage : ContentPage
                 {
                     await SnackBar.Show("Failed to add item. Please try again.");
                 }
-                // await SnackBar.Show("Is editing true");
                 _isEditing = false;
 
             } 
             else 
             {
-                // await SnackBar.Show($"Payload: {string.Join(", ", payload.Select(kv => $"{kv.Key}={kv.Value}"))}");
                 var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
-                // await SnackBar.Show($"Response: {responseContent}");
                 
                 if (response.Response.IsSuccessStatusCode)
                 {
@@ -391,7 +366,6 @@ public partial class MainPage : ContentPage
                 {
                     await SnackBar.Show("Failed to add item. Please try again.");
                 }
-                // await SnackBar.Show("Is editing false");
             }
         } 
         catch (Exception ex)
@@ -415,7 +389,6 @@ public partial class MainPage : ContentPage
                 var response = await apiHandler.Delete(deleteUrl);
 
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
-                await SnackBar.Show($"Response: {responseContent}");
 
                 if (response.Response.IsSuccessStatusCode)
                 {
@@ -438,7 +411,6 @@ public partial class MainPage : ContentPage
     }
 
     #region Chatbot handler
-    private bool _isChatbotOpen = false;
 
     private async void OnMessageClicked(object sender, EventArgs e)
     {
@@ -493,17 +465,45 @@ public partial class MainPage : ContentPage
         string message = ChatInput.Text?.Trim();
         if (string.IsNullOrEmpty(message))
         {
+            // kalau lagi listening, tunggu sampai RecognitionText terisi
+            if (!_isListening)
+            {
+                await StartListening();
+                _isListening = true;
+                SendButton.Source = "unmicrophone.png"; // indikator stop mic
+            }
+            else
+            {
+                await StopListening();
+                _isListening = false;
+                SendButton.Source = "microphone.png"; // kembali ke mic
+            }
             return;
         }
         
-        AddMessageToChat($"You: {message}", false);
+        AddMessageToChat($"{message}", false);
         requestUser = message;
         // await SnackBar.Show($"Sending message to Gemini: {message}");
         ChatInput.Text = "";
+        SendButton.Source = "microphone.png";
 
         try
         {
             string currentTableModel = tableModelJsonFormat;
+            string formattedRequest = $"Kamu adalah AI yang hanya menjawab dalam format JSON valid." +
+                                    "Format wajib:" +
+                                    "{" +
+                                        "'response': 'jawaban kamu',"+
+                                        "'sql_script': 'query SQL yang dihasilkan'"+
+                                    "}"+
+                                    $"Nama Pengguna {username} (Cocok dipakai untuk kolom created_by)"+
+                                    $"User message: {message}"+
+                                    $"Table model: {currentTableModel}"+
+                                    "Aturan tambahan:"+
+                                    "- Jika user bertanya di luar konteks tabel, tetap balas dengan JSON di atas,"+
+                                        "dan isi 'sql_script' dengan null atau kosong."+
+                                    "- Jangan berikan jawaban lain selain JSON.";
+
             var geminiPayload = new GeminiRequest
             {
                 Contents = new List<Content>
@@ -511,7 +511,7 @@ public partial class MainPage : ContentPage
                     new Content
                     {
                         role = "user",
-                        parts = new List<Part> { new Part { text = $"{message}, you just create with a sql script only skip all the explain and commentar, the table model is {currentTableModel}" }}
+                        parts = new List<Part> { new Part { text = $"{formattedRequest}" } },
                     }
                 }
             };
@@ -520,32 +520,29 @@ public partial class MainPage : ContentPage
             var response = await apiHandler.PostGemini(geminiPayload);
             if (response.candidates != null)
             {
-                // await SnackBar.Show("Received response from Gemini.");
                 string botReply = response.candidates[0]?.content?.parts[0]?.text ?? "Chatbot: (tidak ada respons)";
-                // string getSqlScript = sqlHelper.wrapSqlScript(botReply);
-                // await SnackBar.Show($"Received response from Gemini: {botReply}");
-                finishedSqlScript = sqlHelper.RemoveSignScript(botReply);
-                await SnackBar.Show($"Received response from Gemini: {finishedSqlScript}");
-                string naturalLangConfirm = sqlHelper.ConvertSqlScriptToNaturalLanguage(finishedSqlScript);
+                
+                var jsonRes = JObject.Parse(sqlHelper.RemoveSignScript(botReply));
+                var naturalLangConfirm = jsonRes["response"].ToString();
+                finishedSqlScript = jsonRes["sql_script"].ToString();
+
                 responseToUser = naturalLangConfirm;
+
                 ConfirmModalTitle.Text = naturalLangConfirm;
                 AnimateConfirmModal();
-                // AddMessageToChat($"SQl Script {getSqlScript}", false);
-                AddMessageToChat($"Bot: {botReply}", true);
+                AddMessageToChat($"{naturalLangConfirm}", true);
             }
             else
             {
-                await SnackBar.Show("Kosong");
-                AddMessageToChat("Bot: No response from Gemini.", true);
+                AddMessageToChat("No response from Gemini.", true);
             }
         }
         catch (Exception ex)
         {
-            AddMessageToChat($"Bot: Error occurred - {ex.Message}", true);
+            AddMessageToChat($"Error occurred - {ex.Message}", true);
         }
     }
 
-    bool _isConfirmModalOpen = false;
     private async void AnimateConfirmModal()
     {
         if (_isConfirmModalOpen) return;
@@ -582,8 +579,9 @@ public partial class MainPage : ContentPage
             Messages.Add(new ChatMessage
             {
                 Content = text,
-                MessageBgColor = "#4e65e3ff",   // contoh warna bubble
-                MessageTextColor = "#333333"
+                MessageBgColor = "#4e65e3ff",
+                MessageTextColor = "#34c6eb",
+                MessageAlignment = "Left"
             });
         }
         else
@@ -591,8 +589,9 @@ public partial class MainPage : ContentPage
             Messages.Add(new ChatMessage
             {
                 Content = text,
-                MessageBgColor = "#E0F7FA",   // contoh warna bubble
-                MessageTextColor = "#333333"
+                MessageBgColor = "#E0F7FA",
+                MessageTextColor = "#333333",
+                MessageAlignment = "Right"
             });           
         }
     }
@@ -636,6 +635,8 @@ public partial class MainPage : ContentPage
     {
         try
         {
+            if (_isClickConfirmed) return;
+            _isClickConfirmed = true;
             var payload = new Dictionary<string, string>
             {
                 {"token", token},
@@ -652,7 +653,6 @@ public partial class MainPage : ContentPage
             }
 
             var json = await response.Response.Content.ReadAsStringAsync();
-            await SnackBar.Show($"Response: {json}");
             LoadInventoryData();
         }
         catch (Exception ex)
@@ -662,6 +662,7 @@ public partial class MainPage : ContentPage
         finally
         {
             AnimateDownConfirmModal();
+            _isClickConfirmed = false;
         }
     }
 
@@ -677,6 +678,78 @@ public partial class MainPage : ContentPage
             ConfirmModal.ScaleTo(0.8, 250, Easing.CubicOut)
         );
         ConfirmModal.IsVisible = false;
+    }
+
+    #endregion
+
+    #region Input ask handler
+    private void OnChatInputTextChanged(object sender, TextChangedEventArgs e)
+    {
+        string input = e.NewTextValue;
+        if (string.IsNullOrEmpty(input))
+        {
+            SendButton.Source = "microphone.png";
+        } 
+        else
+        {
+            SendButton.Source = "send.png";    
+        }
+    }
+
+    #endregion
+
+    #region Mic Permission
+    public static async Task<bool> RequestMicrophonePermissionAsync()
+    {
+        var status = await Permissions.CheckStatusAsync<Permissions.Microphone>();
+        if (status != PermissionStatus.Granted)
+        {
+            status = await Permissions.RequestAsync<Permissions.Microphone>();
+        }
+        return status == PermissionStatus.Granted;
+    }
+
+    private async Task StartListening()
+    {
+        var cancellationToken = _cts.Token;
+
+        var isGranted = await speechToText.RequestPermissions(cancellationToken);
+        if (!isGranted)
+        {
+            Toast.Make("Permission not granted").Show();
+            return;
+        }  
+
+        speechToText.RecognitionResultUpdated += OnRecognitionTextUpdated;
+        speechToText.RecognitionResultCompleted += OnRecognitionTextCompleted;
+        await speechToText.StartListenAsync(new SpeechToTextOptions { Culture = CultureInfo.CurrentCulture, ShouldReportPartialResults = true });
+    }
+
+    private async Task StopListening()
+    {
+        var cancellationToken = _cts.Token;
+
+        await speechToText.StopListenAsync();
+        speechToText.RecognitionResultUpdated -= OnRecognitionTextUpdated;
+        speechToText.RecognitionResultCompleted -= OnRecognitionTextCompleted;
+    }
+
+    private void OnRecognitionTextUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs args)
+    {
+        var result = args.RecognitionResult; // ini tipe SpeechToTextResult
+        string recognizedText = result; // ambil teks dari property Text
+
+        if (!string.IsNullOrEmpty(recognizedText))
+            ChatInput.Text = recognizedText;
+    }
+
+    private void OnRecognitionTextCompleted(object? sender, SpeechToTextRecognitionResultCompletedEventArgs args)
+    {
+        var result = args.RecognitionResult; // ini tipe SpeechToTextResult
+        string recognizedText = result.Text; // ambil teks dari property Text
+
+        if (!string.IsNullOrEmpty(recognizedText))
+            ChatInput.Text = recognizedText;
     }
 
     #endregion

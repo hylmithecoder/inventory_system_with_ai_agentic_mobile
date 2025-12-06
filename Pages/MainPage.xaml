@@ -28,6 +28,7 @@
                     <Label Grid.Column="1"
                         Text="Inventory"
                         FontSize="22"
+                        FontFamily="MiSans"
                         FontAttributes="Bold"
                         TextColor="#333333"
                         HorizontalOptions="Center"
@@ -45,9 +46,11 @@
                         </Border.StrokeShape>
                         <VerticalStackLayout Spacing="5">
                             <Label Text="Total Items"
+                                   FontFamily="MiSans"
                                    TextColor="#999999"
                                    FontSize="12"/>
                             <Label x:Name="TotalItemsLabel"
+                                   FontFamily="MiSans"
                                    Text="0"
                                    FontSize="24"
                                    FontAttributes="Bold"
@@ -64,9 +67,11 @@
                         </Border.StrokeShape>
                         <VerticalStackLayout Spacing="5">
                             <Label Text="Total Stock"
+                                   FontFamily="MiSans"
                                    TextColor="#999999"
                                    FontSize="12"/>
                             <Label x:Name="TotalStockLabel"
+                                   FontFamily="MiSans"
                                    Text="0"
                                    FontSize="24"
                                    FontAttributes="Bold"
@@ -83,9 +88,11 @@
                         </Border.StrokeShape>
                         <VerticalStackLayout Spacing="5">
                             <Label Text="Total Value"
+                                   FontFamily="MiSans"
                                    TextColor="#999999"
                                    FontSize="12"/>
                             <Label x:Name="TotalValueLabel"
+                                   FontFamily="MiSans"
                                    Text="Rp 0"
                                    FontSize="24"
                                    FontAttributes="Bold"
@@ -281,7 +288,8 @@
                                     Margin="0,4"
                                     HasShadow="False">
                                     <Label Text="{Binding Content}"
-                                        TextColor="Black"
+                                        HorizontalTextAlignment="{Binding MessageAlignment}"
+                                        TextColor="{Binding MessageTextColor}"
                                         FontFamily="MiSans"
                                         FontSize="14"
                                         LineBreakMode="WordWrap"/>
@@ -306,14 +314,15 @@
                     <!-- Bungkus Entry di Frame supaya bisa padding & corner radius -->
                     <Frame Grid.Column="0"
                         CornerRadius="12"
-                        Padding="12,8"
+                        Padding="6,2"
                         BackgroundColor="#F0F0F0"
                         HasShadow="False"
-                        HeightRequest="48"
+                        HeightRequest="50"
                         VerticalOptions="Center"
                         HorizontalOptions="FillAndExpand">
                         <Entry x:Name="ChatInput"
                             Placeholder="Type message..."
+                            TextChanged="OnChatInputTextChanged"
                             TextColor="Black"
                             FontFamily="MiSans"
                             BackgroundColor="Transparent"
@@ -322,21 +331,21 @@
                             VerticalOptions="Center" />
                     </Frame>
 
-                    <Button Grid.Column="1"
-                            Text="Send"
-                            FontFamily="MiSans"
-                            CornerRadius="12"
-                            BackgroundColor="#3498DB"
-                            TextColor="White"
-                            WidthRequest="90"
-                            HeightRequest="48"
-                            Padding="0"
-                            Clicked="OnSendMessageClicked"/>
+                    <ImageButton Grid.Column="1"
+                        x:Name="SendButton"
+                        Source="microphone.png"
+                        BackgroundColor="#3498DB"
+                        CornerRadius="12"
+                        WidthRequest="48"
+                        HeightRequest="48"
+                        Padding="0"
+                        Clicked="OnSendMessageClicked"/>
+
                 </Grid>
             </Grid>
         </Border>
 
-        <!-- Modal Add Item -->
+       <!-- Modal Add Item -->
         <ContentView x:Name="AddItemModal"
                     IsVisible="False"
                     Opacity="0"
@@ -344,18 +353,66 @@
                     BackgroundColor="#80000000"
                     AbsoluteLayout.LayoutBounds="0,0,1,1"
                     AbsoluteLayout.LayoutFlags="All">
+
             <Frame BackgroundColor="White"
-                Padding="70"
+                Padding="20"
                 CornerRadius="10"
                 VerticalOptions="Center"
-                HorizontalOptions="Center">
-                <VerticalStackLayout Spacing="10">
-                    <Label x:Name="ModalTitle"  Text="Tambah Item" FontSize="18" TextColor="Black" FontFamily="MiSans" FontAttributes="Bold"/>
-                    <Entry x:Name="NameEntry" TextColor="Black" Placeholder="Nama barang" FontFamily="MiSans"/>
-                    <Entry x:Name="StockEntry" TextColor="Black" Placeholder="Stock" Keyboard="Numeric" FontFamily="MiSans"/>
-                    <Entry x:Name="PriceEntry" TextColor="Black" Placeholder="Harga" Keyboard="Numeric" FontFamily="MiSans"/>
-                    <Button Text="Simpan" Clicked="OnSaveItemClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
-                    <Button Text="Batal" Clicked="OnCancelAddClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
+                HorizontalOptions="Center"
+                WidthRequest="300"
+                MaximumWidthRequest="400">
+                <VerticalStackLayout Spacing="12">
+                    <Label x:Name="ModalTitle"
+                        Text="Tambah Item"
+                        FontSize="18"
+                        TextColor="Black"
+                        FontFamily="MiSans"
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"/>
+
+                    <!-- Entry tanpa garis -->
+                    <Entry x:Name="NameEntry"
+                        Placeholder="Nama barang"
+                        BackgroundColor="#F5F5F5"
+                        TextColor="Black"
+                        PlaceholderColor="#999"
+                        FontFamily="MiSans"
+                        Margin="0,5"
+                        HeightRequest="40"
+                        />
+
+                    <Entry x:Name="StockEntry"
+                        Placeholder="Stock"
+                        Keyboard="Numeric"
+                        BackgroundColor="#F5F5F5"
+                        TextColor="Black"
+                        PlaceholderColor="#999"
+                        FontFamily="MiSans"
+                        Margin="0,5"
+                        HeightRequest="40"
+                        />
+
+                    <Entry x:Name="PriceEntry"
+                        Placeholder="Harga"
+                        Keyboard="Numeric"
+                        BackgroundColor="#F5F5F5"
+                        TextColor="Black"
+                        PlaceholderColor="#999"
+                        FontFamily="MiSans"
+                        Margin="0,5"
+                        HeightRequest="40"
+                        />
+
+                    <Button Text="Simpan"
+                            Clicked="OnSaveItemClicked"
+                            BackgroundColor="#00BFA5"
+                            TextColor="White"
+                            FontFamily="MiSans"/>
+                    <Button Text="Batal"
+                            Clicked="OnCancelAddClicked"
+                            BackgroundColor="Transparent"
+                            TextColor="#E74C3C"
+                            FontFamily="MiSans"/>
                 </VerticalStackLayout>
             </Frame>
         </ContentView>
@@ -377,11 +434,13 @@
                 </AbsoluteLayout.GestureRecognizers>
                     <Frame x:Name="ChoiceFrame"
                         BackgroundColor="White"
-                        Padding="50"
+                        Padding="20"
                         CornerRadius="10"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Center">
-                        <VerticalStackLayout Spacing="10">
+                        AbsoluteLayout.LayoutBounds="0,0,AutoSize,AutoSize"
+                        AbsoluteLayout.LayoutFlags="None">
+                        <VerticalStackLayout Spacing="10"
+                                            WidthRequest="220"
+                                            MaximumWidthRequest="320">
                             <Label Text="Pilih Aksi" FontSize="18" FontAttributes="Bold"/>
                             <Button Text="Edit" Clicked="OnEditItemClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
                             <Button Text="Hapus" Clicked="OnDeleteItemClicked" BackgroundColor="#E74C3C" TextColor="White" FontFamily="MiSans"/>
@@ -407,15 +466,32 @@
                     <TapGestureRecognizer Tapped="OnConfirmLayoutTapped"/>
                 </AbsoluteLayout.GestureRecognizers>
 
+                <!-- Frame di tengah -->
                 <Frame BackgroundColor="White"
-                    Padding="30"
+                    Padding="20"
                     CornerRadius="10"
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center">
-                    <VerticalStackLayout Spacing="10">
-                        <Label x:Name="ConfirmModalTitle"  Text="Tambah Item" FontSize="18" TextColor="Black" FontFamily="MiSans" FontAttributes="Bold"/>
-                        <Button Text="Yes" Clicked="OnConfirmYesClicked" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
-                        <Button Text="Cancel" Clicked="OnCancelConfirmClicked" BackgroundColor="Transparent" TextColor="#E74C3C" FontFamily="MiSans"/>
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,AutoSize,AutoSize"
+                    AbsoluteLayout.LayoutFlags="PositionProportional">
+                    <VerticalStackLayout Spacing="12"
+                                        WidthRequest="280"
+                                        MaximumWidthRequest="400">
+                        <Label x:Name="ConfirmModalTitle"
+                            Text="Tambah Item"
+                            FontSize="18"
+                            TextColor="Black"
+                            FontFamily="MiSans"
+                            FontAttributes="Bold"
+                            HorizontalTextAlignment="Center"/>
+                        <Button Text="Yes"
+                                Clicked="OnConfirmYesClicked"
+                                BackgroundColor="#00BFA5"
+                                TextColor="White"
+                                FontFamily="MiSans"/>
+                        <Button Text="Cancel"
+                                Clicked="OnCancelConfirmClicked"
+                                BackgroundColor="Transparent"
+                                TextColor="#E74C3C"
+                                FontFamily="MiSans"/>
                     </VerticalStackLayout>
                 </Frame>
             </AbsoluteLayout>
@@ -448,6 +524,7 @@
                 <!-- Header dengan tombol close -->
                 <Grid>
                     <Label Text="Inventory System"
+                        FontFamily="MiSans"
                         FontSize="20"
                         FontAttributes="Bold"
                         TextColor="#333333"
@@ -465,10 +542,11 @@
 
                 <!-- Menu -->
                 <VerticalStackLayout Grid.Row="1" Spacing="10" Margin="0,20,0,0">
-                    <Button Text="Dashboard" BackgroundColor="#00BFA5" TextColor="White"/>
-                    <Button Text="Analytics" BackgroundColor="Transparent" TextColor="#666666"/>
-                    <Button Text="Settings" BackgroundColor="Transparent" TextColor="#666666"/>
+                    <Button Text="Dashboard" BackgroundColor="#00BFA5" TextColor="White" FontFamily="MiSans"/>
+                    <Button Text="Analytics" BackgroundColor="Transparent" TextColor="#666666"  FontFamily="MiSans"/>
+                    <Button Text="Settings" BackgroundColor="Transparent" TextColor="#666666"  FontFamily="MiSans"/>
                     <Button Text="Logout"
+                            FontFamily="MiSans"
                             x:Name="LogoutButton"
                             BackgroundColor="Transparent"
                             TextColor="#E74C3C"

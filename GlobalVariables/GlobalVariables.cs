@@ -29,6 +29,7 @@ namespace InventorySystem.GlobalVariables
         public string Content { get; set; } = "";
         public string MessageBgColor { get; set; } = "#F5F5F5";
         public string MessageTextColor { get; set; } = "Black";
+        public string MessageAlignment { get; set; } = "Right";
     }
 
     #region Chat History Helper

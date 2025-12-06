@@ -489,7 +489,7 @@ namespace InventorySystem.GlobalVariables
             // Hapus tanda pembuka ```sql dan penutup ```
             string result = Regex.Replace(
                 currentResponse,
-                @"^```sql\s*|\s*```$",
+                @"^```json\s*|\s*```$",
                 "",
                 RegexOptions.IgnoreCase | RegexOptions.Multiline
             );

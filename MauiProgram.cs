@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
-// using InventorySystem.Components;
-
+using CommunityToolkit.Maui.Media;
 namespace InventorySystem;
 
 public static class MauiProgram
@@ -19,10 +18,7 @@ public static class MauiProgram
 			});
 		
 		builder = builder.UseMauiCommunityToolkit();
-
-
-		// Load .env file
-		// DotEnv.Load(Path.Combine(FileSystem.AppDataDirectory, ".env"));
+		builder.Services.AddSingleton<ISpeechToText>(SpeechToText.Default);
 
 #if DEBUG
 		builder.Logging.AddDebug();
