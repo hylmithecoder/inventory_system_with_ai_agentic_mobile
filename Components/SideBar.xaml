@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="InventorySystem.Components.SideBar"
+             BackgroundColor="Transparent">
+
+    <AbsoluteLayout>
+        <!-- Overlay -->
+        <BoxView x:Name="Overlay"
+                Color="Black"
+                Opacity="0.3"
+                IsVisible="False"
+                AbsoluteLayout.LayoutBounds="0,0,1,1"
+                AbsoluteLayout.LayoutFlags="All">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnOverlayTapped"/>
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- Sidebar -->
+        <Border x:Name="Sidebar"
+                AbsoluteLayout.LayoutBounds="0,0,250,1"
+                AbsoluteLayout.LayoutFlags="YProportional,HeightProportional"
+                BackgroundColor="White"
+                Padding="0"
+                IsVisible="False">
+            <!-- <Border.Shadow>
+                <Shadow Brush="Black" Opacity="0.1" Radius="10" Offset="5,0"/>
+            </Border.Shadow> -->
+
+            <Grid RowDefinitions="Auto,*" Padding="20">
+                <!-- Header dengan tombol close -->
+                <Grid>
+                    <Label Text="Inventory System"
+                        FontFamily="MiSans"
+                        FontSize="20"
+                        FontAttributes="Bold"
+                        TextColor="#333333"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Start"/>
+                    <Button Text="✕"
+                            Clicked="OnClickSideBar"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            BackgroundColor="Transparent"
+                            BorderColor="Transparent"
+                            TextColor="#333333"
+                            FontSize="20"/>
+                </Grid>
+
+                <!-- Menu -->
+                <VerticalStackLayout Grid.Row="1" Spacing="10" Margin="0,20,0,0">
+                    <Button Text="Dashboard" BackgroundColor="{Binding DashboardButtonColor}" TextColor="{Binding DashboardTextColor}" FontFamily="MiSans" Clicked="OnDashboardClicked"/>
+                    <Button Text="Settings" BackgroundColor="{Binding SettingsButtonColor}" TextColor="{Binding SettingsTextColor}"  FontFamily="MiSans" Clicked="OnSettingsClicked"/>
+                    <Button Text="Logout"
+                            FontFamily="MiSans"
+                            x:Name="LogoutButton"
+                            BackgroundColor="Transparent"
+                            TextColor="#E74C3C"
+                            VerticalOptions="EndAndExpand"
+                            Clicked="OnLogoutClicked"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+    </AbsoluteLayout>
+</ContentView>

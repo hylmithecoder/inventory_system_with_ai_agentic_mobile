@@ -6,6 +6,7 @@ using InventorySystem.Controls;
 using Newtonsoft.Json.Linq;
 using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Maui.Alerts;
+using InventorySystem.Components;
 namespace InventorySystem.Pages;
 
 public partial class MainPage : ContentPage
@@ -30,7 +31,7 @@ public partial class MainPage : ContentPage
         inventoryData = new InventoryResponse();
         sqlHelper = new HelperSql();
         _cts = new CancellationTokenSource();
-        Sidebar.IsVisible = _isSidebarOpen;
+        // SideBar.IsVisible = _isSidebarOpen;
 		LoadInventoryData();
         GetUserName();
         GetHistoryChat();
@@ -50,7 +51,7 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            var response = await apiHandler.getInfoInventory();
+            var response = await apiHandler.getInfoInventory($"{ApiHandler.BaseUrl}?user={username}");
             inventoryData = response;
 
             if (inventoryData.status == "success" && inventoryData.data != null)
@@ -136,51 +137,50 @@ public partial class MainPage : ContentPage
 
 	private async void OnClickSideBar(object sender, EventArgs e)
 	{
-		_isSidebarOpen = !_isSidebarOpen;
-		await UpdateSidebarState();
+		SideBar.IsOpen = true;
 	}
 
-	private void OnOverlayTapped(object sender, EventArgs e)
-    {
-        if (_isSidebarOpen)
-        {
-            _isSidebarOpen = false;
-            _ = UpdateSidebarState();
-        }
-    }
+	// private void OnOverlayTapped(object sender, EventArgs e)
+    // {
+    //     if (_isSidebarOpen)
+    //     {
+    //         _isSidebarOpen = false;
+    //         _ = UpdateSidebarState();
+    //     }
+    // }
 
-    private async Task UpdateSidebarState()
-    {
-        double width = 250;
-        uint duration = 250;
+    // private async Task UpdateSidebarState()
+    // {
+    //     double width = 250;
+    //     uint duration = 250;
 
-        if (_isSidebarOpen)
-        {
-            Sidebar.IsVisible = true;
-            Overlay.IsVisible = true;
-            await Task.WhenAll(
-                Sidebar.SlideInFromLeft(width, duration),
-                Sidebar.FadeTo(1, duration),
-                Overlay.FadeTo(0.3, duration)
-            );
-        }
-        else
-        {
-            await Task.WhenAll(
-                Sidebar.SlideOutToLeft(width, duration),
-                Sidebar.FadeTo(0, duration),
-                Overlay.FadeTo(0, duration)
-            );
-            Sidebar.IsVisible = false;
-            Overlay.IsVisible = false;
-        }
-    }
+    //     if (_isSidebarOpen)
+    //     {
+    //         Sidebar.IsVisible = true;
+    //         Overlay.IsVisible = true;
+    //         await Task.WhenAll(
+    //             Sidebar.SlideInFromLeft(width, duration),
+    //             Sidebar.FadeTo(1, duration),
+    //             Overlay.FadeTo(0.3, duration)
+    //         );
+    //     }
+    //     else
+    //     {
+    //         await Task.WhenAll(
+    //             Sidebar.SlideOutToLeft(width, duration),
+    //             Sidebar.FadeTo(0, duration),
+    //             Overlay.FadeTo(0, duration)
+    //         );
+    //         Sidebar.IsVisible = false;
+    //         Overlay.IsVisible = false;
+    //     }
+    // }
 
-    private async void OnLogoutClicked(object sender, EventArgs e)
-    {
-        await apiHandler.clearCookiesFile();
-        await Shell.Current.GoToAsync("//LoginPage");
-    }
+    // private async void OnLogoutClicked(object sender, EventArgs e)
+    // {
+    //     await apiHandler.clearCookiesFile();
+    //     await Shell.Current.GoToAsync("//LoginPage");
+    // }
 
     // Button Item Tapped
     private async void OnItemTapped(object sender, EventArgs e)
@@ -192,10 +192,9 @@ public partial class MainPage : ContentPage
         {
             var bounds = AbsoluteLayout.GetLayoutBounds(border);
 
-            // Posisi tepat di bawah item yang diklik
+            // Reset the position of ChoiceFrame to its original position
             AbsoluteLayout.SetLayoutBounds(ChoiceFrame,
-                new Rect(bounds.X, bounds.Y + border.Height + 5,
-                        ChoiceFrame.Width, ChoiceFrame.Height));
+                new Rect(0, bounds.Y + border.Height, ChoiceFrame.Width, ChoiceFrame.Height));
 
             ChoiceModal.IsVisible = true;
             ChoiceModal.BindingContext = item;
@@ -215,7 +214,6 @@ public partial class MainPage : ContentPage
             _isItemTapped = false;
         }
     }
-
 
     private async void OnChoiceLayoutTapped(object sender, EventArgs e)
     {
@@ -411,17 +409,14 @@ public partial class MainPage : ContentPage
     }
 
     #region Chatbot handler
-
     private async void OnMessageClicked(object sender, EventArgs e)
     {
-        // await SnackBar.Show("Chatbot feature is under development.");
         _isChatbotOpen = !_isChatbotOpen;
         UpdateChatbotState();
     }
 
     private async Task UpdateChatbotState()
     {
-        // await SnackBar.Show("Chatbot feature is under development.");
         double width = 300;
         uint duration = 250;
 
@@ -635,7 +630,11 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            if (_isClickConfirmed) return;
+            if (_isClickConfirmed) {
+                await SnackBar.Show("Please wait...");
+                return;
+            }
+
             _isClickConfirmed = true;
             var payload = new Dictionary<string, string>
             {
@@ -653,6 +652,8 @@ public partial class MainPage : ContentPage
             }
 
             var json = await response.Response.Content.ReadAsStringAsync();
+
+            await SnackBar.Show($"Successfully executed item. {json}");
             LoadInventoryData();
         }
         catch (Exception ex)

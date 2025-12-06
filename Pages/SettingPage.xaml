@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:InventorySystem.Controls"
+             xmlns:components="clr-namespace:InventorySystem.Components"
+             x:Class="InventorySystem.Pages.SettingPage"
+             BackgroundColor="#F5F5F5"
+             Shell.NavBarIsVisible="False">
+
+    <AbsoluteLayout x:Name="MainLayout">
+        
+        <!-- Main Content -->
+        <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
+                    AbsoluteLayout.LayoutFlags="All"
+                    Padding="20">
+            <VerticalStackLayout Spacing="25">
+
+                <!-- Header -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <!-- Sidebar toggle -->
+                    <Button Grid.Column="0"
+                            Text="☰"
+                            Clicked="OnClickSideBar"
+                            BackgroundColor="Transparent"
+                            TextColor="#333333"
+                            FontSize="24"/>
+                    
+                    <!-- Title -->
+                    <Label Grid.Column="1"
+                           Text="Settings"
+                           FontSize="22"
+                           FontFamily="MiSans"
+                           FontAttributes="Bold"
+                           TextColor="#333333"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Grid>
+
+                <!-- Change Password Section -->
+                <Frame BackgroundColor="White"
+                       CornerRadius="12"
+                       Padding="20"
+                       HasShadow="True">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Change Username"
+                               FontSize="18"
+                               FontFamily="MiSans"
+                               FontAttributes="Bold"
+                               TextColor="#2C3E50"/>
+
+                        <Entry x:Name="UsernameEntry"
+                               Placeholder="Username"
+                               BackgroundColor="#F5F5F5"
+                               FontFamily="MiSans"
+                               TextColor="#333333"
+                               FontSize="16"/>
+
+                        <Label Text="Change Password"
+                               FontSize="18"
+                               FontFamily="MiSans"
+                               FontAttributes="Bold"
+                               TextColor="#2C3E50"/>
+                        
+                        <Entry x:Name="CurrentPasswordEntry"
+                               Placeholder="Current Password"
+                               IsPassword="True"
+                               FontFamily="MiSans"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333333"
+                               FontSize="16"/>
+                        
+                        <Entry x:Name="NewPasswordEntry"
+                               Placeholder="New Password"
+                               IsPassword="True"
+                               FontFamily="MiSans"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333333"
+                               FontSize="16"/>
+                        
+                        <Entry x:Name="ConfirmPasswordEntry"
+                               Placeholder="Confirm New Password"
+                               IsPassword="True"
+                               FontFamily="MiSans"
+                               BackgroundColor="#F5F5F5"
+                               TextColor="#333333"
+                               FontSize="16"/>
+                        
+                        <Button Text="Update Password"
+                                BackgroundColor="#00BFA5"
+                                TextColor="White"
+                                CornerRadius="25"
+                                FontFamily="MiSans"
+                                HeightRequest="48"
+                                FontAttributes="Bold"
+                                Clicked="OnUpdatePasswordClicked"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Preferences Section -->
+                <Frame BackgroundColor="White"
+                       CornerRadius="12"
+                       Padding="20"
+                       HasShadow="True">
+                    <VerticalStackLayout Spacing="15">
+                        <Label Text="Preferences"
+                               FontSize="18"
+                               FontAttributes="Bold"
+                               TextColor="#2C3E50"/>
+                        
+                        <Switch x:Name="DarkModeSwitch"/>
+                        <Label Text="Enable Dark Mode"
+                               FontSize="16"
+                               TextColor="#333333"/>
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Sidebar -->
+        <components:SideBar x:Name="SideBar"
+                            AbsoluteLayout.LayoutBounds="0,0,1,1"
+                            AbsoluteLayout.LayoutFlags="All"/>
+                        
+        <!-- Snackbar -->
+        <controls:SnackBar x:Name="SnackBar"
+                            AbsoluteLayout.LayoutBounds="0,0,1,1"
+                            AbsoluteLayout.LayoutFlags="All"/>
+    </AbsoluteLayout>
+</ContentPage>

@@ -47,7 +47,7 @@ public class ApiHandler
         }
     }
 
-    public async Task<InventoryResponse> getInfoInventory()
+    public async Task<InventoryResponse> getInfoInventory(string url)
     {
         var handler = new HttpClientHandler
         {
@@ -56,7 +56,7 @@ public class ApiHandler
 
         using var client = new HttpClient(handler);
 
-        var response = await client.GetAsync($"{BaseUrl}");
+        var response = await client.GetAsync($"{url}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Convert JSON string ke object InventoryResponse
