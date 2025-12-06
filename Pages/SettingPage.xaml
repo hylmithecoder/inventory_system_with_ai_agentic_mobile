@@ -107,7 +107,7 @@
                                FontAttributes="Bold"
                                TextColor="#2C3E50"/>
                         
-                        <Switch x:Name="DarkModeSwitch"/>
+                        <Switch x:Name="DarkModeSwitch" Toggled="OnDarkModeSwitchToggled"/>
                         <Label Text="Enable Dark Mode"
                                FontSize="16"
                                TextColor="#333333"/>

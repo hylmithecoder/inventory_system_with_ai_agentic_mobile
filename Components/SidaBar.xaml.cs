@@ -7,16 +7,21 @@ public partial class SideBar : ContentView
 {
     private ApiHandler apiHandler;
     private bool _isSidebarOpen = false;
-    public Color DashboardButtonColor { get; set; } = Color.FromHex("#00BFA5");
-    public Color SettingsButtonColor { get; set; } = Colors.Transparent;
-    public Color DashboardTextColor { get; set; } = Color.FromHex("#ffffff");
-    public Color SettingsTextColor { get; set; } = Color.FromHex("#666666");
+    public Color DashboardButtonColor { get; set; }
+    public Color SettingsButtonColor { get; set; }
+    public Color DashboardTextColor { get; set; }
+    public Color SettingsTextColor { get; set; }
 
     public SideBar()
     {
         InitializeComponent();
         apiHandler = new ApiHandler();
         Sidebar.IsVisible = _isSidebarOpen;
+        // Set initial values for properties
+        DashboardButtonColor = Color.FromHex("#00BFA5");
+        SettingsButtonColor = Colors.Transparent;
+        DashboardTextColor = Color.FromHex("#ffffff");
+        SettingsTextColor = Color.FromHex("#666666");
     }
 
 	public async void OnClickSideBar(object sender, EventArgs e)
@@ -98,6 +103,6 @@ public partial class SideBar : ContentView
         SettingsButtonColor = Colors.Transparent;
         DashboardTextColor = Color.FromHex("#ffffff");
         SettingsTextColor = Color.FromHex("#666666");
-        await Shell.Current.GoToAsync("MainPage");
+        await Shell.Current.GoToAsync("///MainPage");
     }
 }

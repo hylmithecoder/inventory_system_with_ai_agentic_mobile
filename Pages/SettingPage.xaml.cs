@@ -7,6 +7,7 @@ public partial class SettingPage : ContentPage
 {
     private ApiHandler apiHandler;
     private string username;
+    private bool _isToogleOn = false;
     public SettingPage()
     {
         apiHandler = new ApiHandler();
@@ -62,6 +63,18 @@ public partial class SettingPage : ContentPage
 
         await SnackBar.Show($"Password updated successfully. {reponse}");
         SetProfile();
+    }
+
+    private void OnDarkModeSwitchToggled(object sender, ToggledEventArgs e)
+    {
+        if (e.Value)
+        {
+            App.Current.UserAppTheme = AppTheme.Dark;
+        }
+        else
+        {
+            App.Current.UserAppTheme = AppTheme.Light;
+        }
     }
 
 }
