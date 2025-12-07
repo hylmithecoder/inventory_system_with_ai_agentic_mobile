@@ -7,10 +7,41 @@ public partial class SideBar : ContentView
 {
     private ApiHandler apiHandler;
     private bool _isSidebarOpen = false;
-    public Color DashboardButtonColor { get; set; }
-    public Color SettingsButtonColor { get; set; }
-    public Color DashboardTextColor { get; set; }
-    public Color SettingsTextColor { get; set; }
+    public static readonly BindableProperty DashboardButtonColorProperty =
+        BindableProperty.Create(nameof(DashboardButtonColor), typeof(Color), typeof(SideBar), Colors.Transparent);
+
+    public Color DashboardButtonColor
+    {
+        get => (Color)GetValue(DashboardButtonColorProperty);
+        set => SetValue(DashboardButtonColorProperty, value);
+    }
+
+    public static readonly BindableProperty SettingsButtonColorProperty =
+        BindableProperty.Create(nameof(SettingsButtonColor), typeof(Color), typeof(SideBar), Colors.Transparent);
+
+    public Color SettingsButtonColor 
+    { 
+        get => (Color)GetValue(SettingsButtonColorProperty); 
+        set => SetValue(SettingsButtonColorProperty, value); 
+    }
+
+    public static readonly BindableProperty DashboardTextColorProperty =
+        BindableProperty.Create(nameof(DashboardTextColor), typeof(Color), typeof(SideBar), Colors.Transparent);
+
+    public Color DashboardTextColor 
+    {
+        get => (Color)GetValue(DashboardTextColorProperty);
+        set => SetValue(DashboardTextColorProperty, value); 
+    }
+
+    public static readonly BindableProperty SettingsTextColorProperty =
+        BindableProperty.Create(nameof(SettingsTextColor), typeof(Color), typeof(SideBar), Colors.Transparent);
+
+    public Color SettingsTextColor 
+    {     
+        get => (Color)GetValue(SettingsTextColorProperty);
+        set => SetValue(SettingsTextColorProperty, value); 
+     }
 
     public SideBar()
     {
@@ -22,6 +53,8 @@ public partial class SideBar : ContentView
         SettingsButtonColor = Colors.Transparent;
         DashboardTextColor = Color.FromHex("#ffffff");
         SettingsTextColor = Color.FromHex("#666666");
+
+        BindingContext = this;
     }
 
 	public async void OnClickSideBar(object sender, EventArgs e)

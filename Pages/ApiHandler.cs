@@ -23,11 +23,11 @@ public class ApiResponse
 
 public class ApiHandler
 {
-    public const string BaseUrl = "https://ilmeee.com/smart_inventory_solution/";
-    public const string LoginUrl = BaseUrl + "accounts/";
-    public const string RegisterUrl = BaseUrl + "register/";
-    public const string getAllInformDatabase = BaseUrl + "get_allinform_database/";
-    public const string HandlerRequest = BaseUrl + "handler_request/";
+    public const string BaseUrl = "https://ilmeee.com/smart_inventory_solution";
+    public const string LoginUrl = BaseUrl + "/accounts/";
+    public const string RegisterUrl = BaseUrl + "/register/";
+    public const string getAllInformDatabase = BaseUrl + "/get_allinform_database/";
+    public const string HandlerRequest = BaseUrl + "/handler_request/";
     public List<string> allModels =  new List<string>{ "gemma-3-27b-it", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-pro" };
     public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
     private const string geminiApiKey = "";
