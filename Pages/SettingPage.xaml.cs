@@ -77,4 +77,15 @@ public partial class SettingPage : ContentPage
         }
     }
 
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (SideBar != null)
+        {
+            SideBar.DashboardButtonColor = Colors.Transparent;
+            SideBar.DashboardTextColor = Color.FromHex("#666666");
+            SideBar.SettingsButtonColor = Color.FromHex("#00BFA5");
+            SideBar.SettingsTextColor = Color.FromHex("#ffffff");
+        }
+    }
 }

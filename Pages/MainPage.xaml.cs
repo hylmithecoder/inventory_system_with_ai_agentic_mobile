@@ -140,48 +140,6 @@ public partial class MainPage : ContentPage
 		SideBar.IsOpen = true;
 	}
 
-	// private void OnOverlayTapped(object sender, EventArgs e)
-    // {
-    //     if (_isSidebarOpen)
-    //     {
-    //         _isSidebarOpen = false;
-    //         _ = UpdateSidebarState();
-    //     }
-    // }
-
-    // private async Task UpdateSidebarState()
-    // {
-    //     double width = 250;
-    //     uint duration = 250;
-
-    //     if (_isSidebarOpen)
-    //     {
-    //         Sidebar.IsVisible = true;
-    //         Overlay.IsVisible = true;
-    //         await Task.WhenAll(
-    //             Sidebar.SlideInFromLeft(width, duration),
-    //             Sidebar.FadeTo(1, duration),
-    //             Overlay.FadeTo(0.3, duration)
-    //         );
-    //     }
-    //     else
-    //     {
-    //         await Task.WhenAll(
-    //             Sidebar.SlideOutToLeft(width, duration),
-    //             Sidebar.FadeTo(0, duration),
-    //             Overlay.FadeTo(0, duration)
-    //         );
-    //         Sidebar.IsVisible = false;
-    //         Overlay.IsVisible = false;
-    //     }
-    // }
-
-    // private async void OnLogoutClicked(object sender, EventArgs e)
-    // {
-    //     await apiHandler.clearCookiesFile();
-    //     await Shell.Current.GoToAsync("//LoginPage");
-    // }
-
     // Button Item Tapped
     private async void OnItemTapped(object sender, EventArgs e)
     {
@@ -190,11 +148,11 @@ public partial class MainPage : ContentPage
 
         if (sender is Border border && border.BindingContext is InventoryData item)
         {
-            var bounds = AbsoluteLayout.GetLayoutBounds(border);
+            // var bounds = AbsoluteLayout.GetLayoutBounds(border);
 
-            // Reset the position of ChoiceFrame to its original position
-            AbsoluteLayout.SetLayoutBounds(ChoiceFrame,
-                new Rect(0, bounds.Y + border.Height, ChoiceFrame.Width, ChoiceFrame.Height));
+            // // Reset the position of ChoiceFrame to its original position
+            // AbsoluteLayout.SetLayoutBounds(ChoiceFrame,
+            //     new Rect(0, bounds.Y + border.Height, ChoiceFrame.Width, ChoiceFrame.Height));
 
             ChoiceModal.IsVisible = true;
             ChoiceModal.BindingContext = item;
@@ -337,12 +295,13 @@ public partial class MainPage : ContentPage
             {
                 payload["id"] = editItem.ID ?? "";
                 payload["_method"] = "PUT";
-                var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
+                var response = await apiHandler.Post($"{ApiHandler.BaseUrl}/", payload);
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
 
                 if (response.Response.IsSuccessStatusCode)
                 {
                     LoadInventoryData();
+                    await SnackBar.Show("Successfully edited item.");
                 }
                 else
                 {
@@ -353,12 +312,13 @@ public partial class MainPage : ContentPage
             } 
             else 
             {
-                var response = await apiHandler.Post(ApiHandler.BaseUrl, payload);
+                var response = await apiHandler.Post(ApiHandler.BaseUrl+"/", payload);
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
                 
                 if (response.Response.IsSuccessStatusCode)
                 {
                     LoadInventoryData();
+                    await SnackBar.Show("Successfully added item.");
                 }
                 else
                 {
@@ -383,7 +343,7 @@ public partial class MainPage : ContentPage
             if (ChoiceModal.BindingContext is InventoryData item)
             {
 
-                string deleteUrl = $"{ApiHandler.BaseUrl}?token={token}&id={item.ID}";
+                string deleteUrl = $"{ApiHandler.BaseUrl}/?token={token}&id={item.ID}";
                 var response = await apiHandler.Delete(deleteUrl);
 
                 var responseContent = await response.Response.Content.ReadAsStringAsync();
@@ -391,6 +351,7 @@ public partial class MainPage : ContentPage
                 if (response.Response.IsSuccessStatusCode)
                 {
                     LoadInventoryData();
+                    await SnackBar.Show("Successfully deleted item.");
                 }
                 else
                 {
@@ -485,19 +446,34 @@ public partial class MainPage : ContentPage
         try
         {
             string currentTableModel = tableModelJsonFormat;
-            string formattedRequest = $"Kamu adalah AI yang hanya menjawab dalam format JSON valid." +
-                                    "Format wajib:" +
-                                    "{" +
-                                        "'response': 'jawaban kamu',"+
-                                        "'sql_script': 'query SQL yang dihasilkan'"+
-                                    "}"+
-                                    $"Nama Pengguna {username} (Cocok dipakai untuk kolom created_by)"+
-                                    $"User message: {message}"+
-                                    $"Table model: {currentTableModel}"+
-                                    "Aturan tambahan:"+
-                                    "- Jika user bertanya di luar konteks tabel, tetap balas dengan JSON di atas,"+
-                                        "dan isi 'sql_script' dengan null atau kosong."+
-                                    "- Jangan berikan jawaban lain selain JSON.";
+            string formattedRequest = 
+                "Kamu adalah AI yang hanya menjawab dalam format JSON valid.\n" +
+                "Format wajib:\n" +
+                "{\n" +
+                "  \"response\": \"penjelasan singkat dalam bahasa manusia (tanpa menyebut SQL, query, atau script secara eksplisit)\",\n" +
+                "  \"sql_script\": \"query SQL yang dihasilkan atau null jika tidak relevan\"\n" +
+                "}\n\n" +
+
+                "Data Pendukung:\n" +
+                $"- Nama Pengguna: {username} (dipakai untuk kolom created_by)\n" +
+                $"- User message: {message}\n" +
+                $"- Table model: {currentTableModel}\n\n" +
+
+                "Aturan keamanan:\n" +
+                "- Tabel \"account\" hanya digunakan untuk memeriksa apakah pengguna adalah admin.\n" +
+                "- Kolom tanda admin adalah \"isAdmin\" yang nilainya \"yes\" atau \"no\".\n" +
+                "- Untuk permintaan yang memodifikasi data (INSERT, UPDATE, DELETE):\n" +
+                "  • jika isAdmin = \"yes\", jalankan sesuai aturan normal.\n" +
+                "  • jika isAdmin = \"no\" atau pengguna tidak ditemukan:\n" +
+                "      - \"sql_script\" harus bernilai null\n" +
+                "      - \"response\" jelaskan singkat bahwa pengguna tidak memiliki izin admin.\n" +
+                "- Jangan sebutkan detail tabel pada \"response\".\n" +
+                "- Jangan keluarkan SQL jika pengguna bukan admin.\n\n" +
+
+                "Aturan tambahan:\n" +
+                "- Jika user bertanya di luar konteks tabel, tetap balas JSON di atas, dan isi \"sql_script\" null.\n" +
+                "- Jangan berikan jawaban lain selain JSON.\n";
+
 
             var geminiPayload = new GeminiRequest
             {
@@ -524,7 +500,11 @@ public partial class MainPage : ContentPage
                 responseToUser = naturalLangConfirm;
 
                 ConfirmModalTitle.Text = naturalLangConfirm;
+                // if (!string.IsNullOrEmpty(finishedSqlScript))
+                // {                
+                // await SnackBar.Show($"SQL Script: {finishedSqlScript}");
                 AnimateConfirmModal();
+                // }
                 AddMessageToChat($"{naturalLangConfirm}", true);
             }
             else
@@ -653,7 +633,7 @@ public partial class MainPage : ContentPage
 
             var json = await response.Response.Content.ReadAsStringAsync();
 
-            await SnackBar.Show($"Successfully executed item. {json}");
+            await SnackBar.Show($"Successfully executed item.");
             LoadInventoryData();
         }
         catch (Exception ex)
@@ -754,4 +734,17 @@ public partial class MainPage : ContentPage
     }
 
     #endregion
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (SideBar != null)
+        {
+            SideBar.DashboardButtonColor = Color.FromHex("#00BFA5");
+            SideBar.DashboardTextColor = Color.FromHex("#ffffff");
+            SideBar.SettingsButtonColor = Colors.Transparent;
+            SideBar.SettingsTextColor = Color.FromHex("#666666");
+        }
+    }
+
 }
