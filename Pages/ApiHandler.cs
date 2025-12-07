@@ -28,7 +28,7 @@ public class ApiHandler
     public const string RegisterUrl = BaseUrl + "register/";
     public const string getAllInformDatabase = BaseUrl + "get_allinform_database/";
     public const string HandlerRequest = BaseUrl + "handler_request/";
-    public List<string> allModels =  new List<string>{ "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-pro" };
+    public List<string> allModels =  new List<string>{ "gemma-3-27b-it", "gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-pro" };
     public const string GeminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
     private const string geminiApiKey = "";
     private static readonly HttpClient client = new HttpClient();
